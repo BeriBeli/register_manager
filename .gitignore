@@ -11,12 +11,16 @@ dist/
 .env.local
 .env.*.local
 
-# Database
+# Database (SQLite - not used but kept for reference)
 *.db
 *.db-journal
 
 # IDE
-.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
@@ -28,6 +32,9 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
 
 # Test coverage
 coverage/

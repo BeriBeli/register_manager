@@ -6,10 +6,12 @@ import { getFieldAccess } from "@register-manager/shared";
 
 interface RegisterTableProps {
   registers: Register[];
+  onSelect?: (register: Register) => void;
   onEdit?: (register: Register) => void;
   onDelete?: (id: string) => void;
 }
 
+// ... AccessBadge ...
 function AccessBadge({ access }: { access: string }) {
   const badgeClass = {
     "read-write": "badge-rw",
@@ -26,10 +28,12 @@ function AccessBadge({ access }: { access: string }) {
   return <span className={badgeClass}>{label}</span>;
 }
 
-export function RegisterTable({ registers, onEdit, onDelete }: RegisterTableProps) {
+export function RegisterTable({ registers, onSelect, onEdit, onDelete }: RegisterTableProps) {
+
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-  const toggleRow = (id: string) => {
+  const toggleRow = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(id)) {
       newExpanded.delete(id);
@@ -59,15 +63,20 @@ export function RegisterTable({ registers, onEdit, onDelete }: RegisterTableProp
               <>
                 <tr
                   key={reg.id}
-                  className="table-row cursor-pointer"
-                  onClick={() => toggleRow(reg.id)}
+                  className="table-row cursor-pointer hover:bg-surface-800/50"
+                  onClick={() => onSelect && onSelect(reg)}
                 >
                   <td className="table-cell">
-                    {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 text-surface-400" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 text-surface-400" />
-                    )}
+                    <button
+                      onClick={(e) => toggleRow(e, reg.id)}
+                      className="p-1 hover:bg-surface-700 rounded text-surface-400"
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="w-4 h-4 text-surface-400" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-surface-400" />
+                      )}
+                    </button>
                   </td>
                   <td className="table-cell font-mono text-primary-400">
                     {reg.addressOffset}

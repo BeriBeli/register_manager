@@ -7,6 +7,7 @@ import { parseNumber, toHex } from "@register-manager/shared";
 interface AddressMapViewProps {
   project: Project;
   onSelectRegister?: (register: Register) => void;
+  onAddAddressBlock?: (memoryMapId: string) => void;
   selectedRegisterId?: string | null;
 }
 
@@ -21,7 +22,7 @@ interface TreeNode {
   data?: any;
 }
 
-export function AddressMapView({ project, onSelectRegister, selectedRegisterId }: AddressMapViewProps) {
+export function AddressMapView({ project, onSelectRegister, onAddAddressBlock, selectedRegisterId }: AddressMapViewProps) {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set([project.id]));
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
@@ -176,7 +177,19 @@ export function AddressMapView({ project, onSelectRegister, selectedRegisterId }
 
           {/* Actions (on hover) */}
           {isHovered && node.type !== "project" && (
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 opacity-100 transition-opacity">
+              {node.type === "memoryMap" && onAddAddressBlock && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddAddressBlock(node.id);
+                  }}
+                  className="p-1.5 hover:bg-surface-700 rounded text-surface-400 hover:text-primary-400"
+                  title="Add Address Block"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();

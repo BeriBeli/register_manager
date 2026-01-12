@@ -20,6 +20,7 @@ interface RegisterStore {
   currentProject: Project | null;
   selectedRegister: Register | null;
   selectedAddressBlockId: string | null;
+  selectedMemoryMapId: string | null;
   isDirty: boolean;
   isLoading: boolean;
   error: string | null;
@@ -31,9 +32,11 @@ interface RegisterStore {
   deleteProject: (id: string) => Promise<void>;
   setCurrentProject: (project: Project | null) => void;
   setSelectedAddressBlockId: (id: string | null) => void;
+  setSelectedMemoryMapId: (id: string | null) => void;
+  createAddressBlock: (memoryMapId: string, data: CreateAddressBlockInput) => Promise<string | undefined>;
 
   // Register actions
-  createRegister: (addressBlockId: string, data: CreateRegisterInput) => Promise<void>;
+  createRegister: (addressBlockId: string, data: CreateRegisterInput) => Promise<string | undefined>;
   updateRegister: (id: string, data: UpdateRegisterInput) => Promise<void>;
   deleteRegister: (id: string) => Promise<void>;
   setSelectedRegister: (register: Register | null) => void;
@@ -58,6 +61,7 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
   currentProject: null,
   selectedRegister: null,
   selectedAddressBlockId: null,
+  selectedMemoryMapId: null,
   isDirty: false,
   isLoading: false,
   error: null,
@@ -89,8 +93,9 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
       set((state) => {
         const newProject: Project = json.data;
         let newSelectedRegister = null;
+        let newSelectedMemoryMapId = null;
 
-        // Try to preserve selected register
+        // Try to preserve selected register if it still exists
         if (state.selectedRegister) {
           const allRegisters = newProject.memoryMaps?.flatMap(mm =>
             mm.addressBlocks?.flatMap(ab => ab.registers || []) || []
@@ -98,9 +103,27 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
           newSelectedRegister = allRegisters.find(r => r.id === state.selectedRegister!.id) || null;
         }
 
+        // If we found the preserved register, ensure we preserve the context
+        if (newSelectedRegister) {
+          // Context is preserved via the register selection logic in UI (which derives parents)
+          // But we should probably keep the IDs if we can. 
+          // Although, store uses separate IDs.
+          // If we have a selected register, we don't strictly *need* selectedMemoryMapId for the view to render Register Editor?
+          // Actually, ProjectView checks selectedRegister first.
+          newSelectedMemoryMapId = state.selectedMemoryMapId;
+        } else {
+          // If no register selected (or lost), default to first Memory Map
+          if (newProject.memoryMaps && newProject.memoryMaps.length > 0) {
+            newSelectedMemoryMapId = newProject.memoryMaps[0].id;
+          }
+        }
+
         return {
           currentProject: newProject,
           selectedRegister: newSelectedRegister,
+          selectedMemoryMapId: newSelectedMemoryMapId,
+          // Reset other selections if we are switching defaults
+          selectedAddressBlockId: newSelectedRegister ? state.selectedAddressBlockId : null,
           isLoading: false
         };
       });
@@ -150,6 +173,34 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
 
   setCurrentProject: (project) => set({ currentProject: project }),
   setSelectedAddressBlockId: (id) => set({ selectedAddressBlockId: id }),
+  setSelectedMemoryMapId: (id) => set({ selectedMemoryMapId: id }),
+
+  createAddressBlock: async (memoryMapId: string, data: CreateAddressBlockInput) => {
+    set({ isLoading: true, error: null });
+    const { currentProject } = get();
+    if (!currentProject) return;
+
+    try {
+      const response = await fetch(`/api/projects/${currentProject.id}/memory-maps/${memoryMapId}/address-blocks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to create address block");
+      }
+      const newAddressBlock = result.data;
+
+      await get().fetchProject(currentProject.id);
+      set({ isLoading: false });
+      return newAddressBlock?.id;
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
 
   // Register actions
   createRegister: async (addressBlockId: string, data: CreateRegisterInput) => {
@@ -169,6 +220,7 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
       }
 
       set({ isLoading: false, isDirty: true });
+      return newRegister?.id;
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

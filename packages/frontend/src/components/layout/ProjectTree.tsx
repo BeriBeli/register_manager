@@ -63,8 +63,11 @@ function TreeNode({
 
 export function ProjectTree() {
   const currentProject = useRegisterStore((state) => state.currentProject);
+  const selectedMemoryMapId = useRegisterStore((state) => state.selectedMemoryMapId);
   const selectedAddressBlockId = useRegisterStore((state) => state.selectedAddressBlockId);
   const selectedRegister = useRegisterStore((state) => state.selectedRegister);
+
+  const setSelectedMemoryMapId = useRegisterStore((state) => state.setSelectedMemoryMapId);
   const setSelectedAddressBlockId = useRegisterStore((state) => state.setSelectedAddressBlockId);
   const setSelectedRegister = useRegisterStore((state) => state.setSelectedRegister);
 
@@ -82,15 +85,23 @@ export function ProjectTree() {
     setExpandedNodes(newExpanded);
   };
 
-  const handleSelectAddressBlock = (id: string) => {
+  const handleSelectMemoryMap = (id: string) => {
+    setSelectedMemoryMapId(id);
+    setSelectedAddressBlockId(null);
+    setSelectedRegister(null);
+  };
+
+  const handleSelectAddressBlock = (id: string, memoryMapId: string) => {
+    setSelectedMemoryMapId(memoryMapId); // Ensure parent is selected context
     setSelectedAddressBlockId(id);
     // When selecting address block manually, clear register selection
     setSelectedRegister(null);
   };
 
-  const handleSelectRegister = (register: Register, addressBlockId: string) => {
-    setSelectedRegister(register);
+  const handleSelectRegister = (register: Register, addressBlockId: string, memoryMapId: string) => {
+    setSelectedMemoryMapId(memoryMapId); // Ensure grandparent is selected context
     setSelectedAddressBlockId(addressBlockId); // Ensure parent is selected context
+    setSelectedRegister(register);
   };
 
   if (!currentProject) return null;
@@ -108,8 +119,9 @@ export function ProjectTree() {
           icon={Map}
           level={0}
           expanded={expandedNodes.has(mm.id)}
+          selected={selectedMemoryMapId === mm.id && !selectedAddressBlockId}
           onToggle={(e) => toggleNode(mm.id, e)}
-          onClick={() => toggleNode(mm.id)}
+          onClick={() => handleSelectMemoryMap(mm.id)}
         >
           {mm.addressBlocks?.map((ab) => (
             <TreeNode
@@ -120,7 +132,7 @@ export function ProjectTree() {
               selected={selectedAddressBlockId === ab.id && !selectedRegister}
               expanded={expandedNodes.has(ab.id)}
               onToggle={(e) => toggleNode(ab.id, e)}
-              onClick={() => handleSelectAddressBlock(ab.id)}
+              onClick={() => handleSelectAddressBlock(ab.id, mm.id)}
             >
               {ab.registers?.map((reg) => (
                 <TreeNode
@@ -129,7 +141,7 @@ export function ProjectTree() {
                   icon={Cpu}
                   level={2}
                   selected={selectedRegister?.id === reg.id}
-                  onClick={() => handleSelectRegister(reg, ab.id)}
+                  onClick={() => handleSelectRegister(reg, ab.id, mm.id)}
                 />
               ))}
             </TreeNode>

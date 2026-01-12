@@ -1,70 +1,70 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, integer, timestamp, boolean, uuid, jsonb } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // ============================================================================
 // Users & Auth
 // ============================================================================
 
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   name: text("name"),
   passwordHash: text("password_hash").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const sessions = sqliteTable("sessions", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+export const sessions = pgTable("sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   token: text("token").notNull().unique(),
-  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Projects
 // ============================================================================
 
-export const projects = sqliteTable("projects", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+export const projects = pgTable("projects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
-  vlnv: text("vlnv", { mode: "json" }).notNull().$type<{
+  vlnv: jsonb("vlnv").notNull().$type<{
     vendor: string;
     library: string;
     name: string;
     version: string;
   }>(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Memory Maps
 // ============================================================================
 
-export const memoryMaps = sqliteTable("memory_maps", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  projectId: text("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+export const memoryMaps = pgTable("memory_maps", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
   addressUnitBits: integer("address_unit_bits").notNull().default(8),
-  shared: integer("shared", { mode: "boolean" }).default(false),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  shared: boolean("shared").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Address Blocks
 // ============================================================================
 
-export const addressBlocks = sqliteTable("address_blocks", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  memoryMapId: text("memory_map_id").notNull().references(() => memoryMaps.id, { onDelete: "cascade" }),
+export const addressBlocks = pgTable("address_blocks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  memoryMapId: uuid("memory_map_id").notNull().references(() => memoryMaps.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
@@ -72,19 +72,19 @@ export const addressBlocks = sqliteTable("address_blocks", {
   range: text("range").notNull(),
   width: integer("width").notNull(),
   usage: text("usage").notNull().default("register"),
-  volatile: integer("volatile", { mode: "boolean" }).default(false),
+  volatile: boolean("volatile").default(false),
   typeIdentifier: text("type_identifier"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Register Files
 // ============================================================================
 
-export const registerFiles = sqliteTable("register_files", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  parentId: text("parent_id").notNull(),
+export const registerFiles = pgTable("register_files", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  parentId: uuid("parent_id").notNull(),
   parentType: text("parent_type").notNull(),
   name: text("name").notNull(),
   displayName: text("display_name"),
@@ -92,76 +92,76 @@ export const registerFiles = sqliteTable("register_files", {
   addressOffset: text("address_offset").notNull(),
   range: text("range").notNull(),
   typeIdentifier: text("type_identifier"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Registers
 // ============================================================================
 
-export const registers = sqliteTable("registers", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  parentId: text("parent_id").notNull(),
+export const registers = pgTable("registers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  parentId: uuid("parent_id").notNull(),
   parentType: text("parent_type").notNull(),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
   addressOffset: text("address_offset").notNull(),
   size: integer("size").notNull(),
-  volatile: integer("volatile", { mode: "boolean" }).default(false),
+  volatile: boolean("volatile").default(false),
   typeIdentifier: text("type_identifier"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Fields
 // ============================================================================
 
-export const fields = sqliteTable("fields", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  registerId: text("register_id").notNull().references(() => registers.id, { onDelete: "cascade" }),
+export const fields = pgTable("fields", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  registerId: uuid("register_id").notNull().references(() => registers.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
   bitOffset: integer("bit_offset").notNull(),
   bitWidth: integer("bit_width").notNull(),
-  volatile: integer("volatile", { mode: "boolean" }).default(false),
+  volatile: boolean("volatile").default(false),
   typeIdentifier: text("type_identifier"),
   access: text("access").default("read-write"),
   modifiedWriteValue: text("modified_write_value"),
   readAction: text("read_action"),
-  testable: integer("testable", { mode: "boolean" }).default(true),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  testable: boolean("testable").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Reset Values
 // ============================================================================
 
-export const resets = sqliteTable("resets", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  fieldId: text("field_id").notNull().references(() => fields.id, { onDelete: "cascade" }),
+export const resets = pgTable("resets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  fieldId: uuid("field_id").notNull().references(() => fields.id, { onDelete: "cascade" }),
   resetTypeRef: text("reset_type_ref"),
   value: text("value").notNull(),
   mask: text("mask"),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Enumerated Values
 // ============================================================================
 
-export const enumeratedValues = sqliteTable("enumerated_values", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  fieldId: text("field_id").notNull().references(() => fields.id, { onDelete: "cascade" }),
+export const enumeratedValues = pgTable("enumerated_values", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  fieldId: uuid("field_id").notNull().references(() => fields.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   displayName: text("display_name"),
   description: text("description"),
   value: text("value").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================

@@ -88,16 +88,7 @@ projectRoutes.post("/", zValidator("json", createProjectSchema), async (c) => {
     })
     .returning();
 
-  // Create default address block
-  await db.insert(addressBlocks).values({
-    memoryMapId: defaultMap.id,
-    name: "default_block",
-    displayName: "Default Block",
-    baseAddress: "0x00000000",
-    range: "0x1000",
-    width: 32,
-    usage: "register",
-  });
+
 
   return c.json({ data: newProject }, 201);
 });

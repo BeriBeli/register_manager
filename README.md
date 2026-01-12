@@ -30,11 +30,14 @@
 bun install
 
 # 配置环境变量
-cp .env.example .env
-# 编辑 .env 文件设置数据库连接
+cp .env.example packages/backend/.env
+# 编辑 packages/backend/.env 文件设置数据库连接
 
 # 运行数据库迁移
 bun run db:migrate
+
+# 添加测试用户（开发环境）
+bun run db:seed
 
 # 启动开发服务器
 bun run dev

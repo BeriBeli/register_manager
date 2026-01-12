@@ -5,7 +5,7 @@ import type { CreateRegisterInput, Register } from "@register-manager/shared";
 
 interface RegisterDialogProps {
   addressBlockId: string;
-  onClose: () => void;
+  onClose: (id?: string) => void;
   editingRegister?: Register | null;
 }
 
@@ -69,10 +69,11 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
     try {
       if (editingRegister) {
         await updateRegister(editingRegister.id, formData);
+        onClose();
       } else {
-        await createRegister(addressBlockId, formData);
+        const newId = await createRegister(addressBlockId, formData);
+        onClose(newId);
       }
-      onClose();
     } catch (error) {
       console.error("Failed to save register:", error);
     }
@@ -87,7 +88,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
             {editingRegister ? "Edit Register" : "Create New Register"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={() => onClose()}
             className="btn-ghost p-2"
             disabled={isLoading}
           >
@@ -207,7 +208,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
         <div className="flex items-center justify-end gap-2 p-4 border-t border-surface-700">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => onClose()}
             className="btn-secondary"
             disabled={isLoading}
           >

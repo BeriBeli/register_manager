@@ -1,6 +1,6 @@
 {
-  "id": "78f15078-34c3-47d5-a490-cfb3568b5978",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "564f20b4-6f7f-4afc-888c-5ef565709ad5",
+  "prevId": "78f15078-34c3-47d5-a490-cfb3568b5978",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -431,7 +431,7 @@
         },
         "vlnv": {
           "name": "vlnv",
-          "type": "text",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": true
         },
