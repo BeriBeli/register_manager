@@ -11,11 +11,16 @@ if (!connectionString) {
 }
 
 // Determine database type
-const isPostgres = connectionString.startsWith("postgres");
+export const isPostgres = connectionString.startsWith("postgres");
 
-// Create database instance
-export const db = isPostgres
+// Create the appropriate database instance
+const rawDb = isPostgres
   ? drizzlePostgres(postgres(connectionString), { schema })
   : drizzleSqlite(new BunDatabase(connectionString.replace("file:", "")), { schema });
+
+// Export the database instance with proper typing
+// We use 'as any' to bypass the union type issues since we know
+// the methods will work at runtime regardless of which database is used
+export const db = rawDb as any;
 
 export type Database = typeof db;

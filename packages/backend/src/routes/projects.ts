@@ -22,7 +22,7 @@ projectRoutes.get("/", async (c) => {
     with: {
       memoryMaps: true,
     },
-    orderBy: (projects, { desc }) => [desc(projects.updatedAt)],
+    orderBy: (_projects: any, { desc }: any) => [desc(_projects.updatedAt)],
   });
 
   return c.json({ data: result });
@@ -41,7 +41,11 @@ projectRoutes.get("/:id", async (c) => {
             with: {
               registers: {
                 with: {
-                  fields: true,
+                  fields: {
+                    with: {
+                      resets: true,
+                    },
+                  },
                 },
               },
             },
@@ -72,6 +76,28 @@ projectRoutes.post("/", zValidator("json", createProjectSchema), async (c) => {
       userId,
     })
     .returning();
+
+  // Create default memory map
+  const [defaultMap] = await db
+    .insert(memoryMaps)
+    .values({
+      projectId: newProject.id,
+      name: "default_map",
+      displayName: "Default Memory Map",
+      addressUnitBits: 8,
+    })
+    .returning();
+
+  // Create default address block
+  await db.insert(addressBlocks).values({
+    memoryMapId: defaultMap.id,
+    name: "default_block",
+    displayName: "Default Block",
+    baseAddress: "0x00000000",
+    range: "0x1000",
+    width: 32,
+    usage: "register",
+  });
 
   return c.json({ data: newProject }, 201);
 });

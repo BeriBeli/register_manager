@@ -5,6 +5,9 @@ import { db } from "../db";
 import { projects } from "../db/schema";
 import { exportRequestSchema } from "@register-manager/shared";
 import { generateIpxactXml } from "../services/generator/xml";
+import { generateCHeader } from "../services/generator/c-header";
+import { generateUVMRAL } from "../services/generator/uvm-ral";
+import { generateHTMLDoc } from "../services/generator/html-doc";
 
 export const exportRoutes = new Hono();
 
@@ -54,16 +57,22 @@ exportRoutes.post("/:projectId", zValidator("json", exportRequestSchema), async 
       break;
 
     case "c-header":
-      // TODO: Implement C header generator
-      return c.json({ error: "C header export not implemented yet", code: "NOT_IMPLEMENTED" }, 501);
+      content = generateCHeader(project as any, options);
+      contentType = "text/plain";
+      filename = `${project.name}.h`;
+      break;
 
     case "uvm-ral":
-      // TODO: Implement UVM RAL generator
-      return c.json({ error: "UVM RAL export not implemented yet", code: "NOT_IMPLEMENTED" }, 501);
+      content = generateUVMRAL(project as any, options);
+      contentType = "text/plain";
+      filename = `${project.name}_ral_pkg.sv`;
+      break;
 
     case "html":
-      // TODO: Implement HTML doc generator
-      return c.json({ error: "HTML export not implemented yet", code: "NOT_IMPLEMENTED" }, 501);
+      content = generateHTMLDoc(project as any, options);
+      contentType = "text/html";
+      filename = `${project.name}.html`;
+      break;
 
     default:
       return c.json({ error: "Invalid export format", code: "INVALID_FORMAT" }, 400);
@@ -81,9 +90,9 @@ exportRoutes.get("/formats", (c) => {
   return c.json({
     data: [
       { id: "ipxact", name: "IP-XACT XML", status: "available" },
-      { id: "c-header", name: "C Header File", status: "coming-soon" },
-      { id: "uvm-ral", name: "UVM RAL", status: "coming-soon" },
-      { id: "html", name: "HTML Documentation", status: "coming-soon" },
+      { id: "c-header", name: "C Header File", status: "available" },
+      { id: "uvm-ral", name: "UVM RAL", status: "available" },
+      { id: "html", name: "HTML Documentation", status: "available" },
     ],
   });
 });

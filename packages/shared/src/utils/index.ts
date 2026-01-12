@@ -1,4 +1,4 @@
-import type { VLNV } from "../types";
+import type { VLNV, Field, AccessType } from "../types";
 
 /**
  * Format VLNV as string (vendor:library:name:version)
@@ -18,6 +18,21 @@ export function parseVLNV(vlnvString: string): VLNV | null {
   if (!vendor || !library || !name || !version) return null;
 
   return { vendor, library, name, version };
+}
+
+/**
+ * Get field access type from access policies
+ */
+export function getFieldAccess(field: Field): AccessType {
+  // Support direct access property (from simplified backend schema)
+  if ("access" in field && (field as any).access) {
+    return (field as any).access as AccessType;
+  }
+
+  if (field.accessPolicies && field.accessPolicies.length > 0) {
+    return field.accessPolicies[0].access;
+  }
+  return "read-write"; // Default
 }
 
 /**

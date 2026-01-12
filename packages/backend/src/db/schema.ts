@@ -194,11 +194,16 @@ export const addressBlocksRelations = relations(addressBlocks, ({ one, many }) =
     fields: [addressBlocks.memoryMapId],
     references: [memoryMaps.id],
   }),
-  registers: many(registers),
+  registers: many(registers, { relationName: "addressBlockRegisters" }),
 }));
 
-export const registersRelations = relations(registers, ({ many }) => ({
+export const registersRelations = relations(registers, ({ one, many }) => ({
   fields: many(fields),
+  addressBlock: one(addressBlocks, {
+    fields: [registers.parentId],
+    references: [addressBlocks.id],
+    relationName: "addressBlockRegisters",
+  }),
 }));
 
 export const fieldsRelations = relations(fields, ({ one, many }) => ({
@@ -208,4 +213,18 @@ export const fieldsRelations = relations(fields, ({ one, many }) => ({
   }),
   resets: many(resets),
   enumeratedValues: many(enumeratedValues),
+}));
+
+export const resetsRelations = relations(resets, ({ one }) => ({
+  field: one(fields, {
+    fields: [resets.fieldId],
+    references: [fields.id],
+  }),
+}));
+
+export const enumeratedValuesRelations = relations(enumeratedValues, ({ one }) => ({
+  field: one(fields, {
+    fields: [enumeratedValues.fieldId],
+    references: [fields.id],
+  }),
 }));

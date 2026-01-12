@@ -31,7 +31,7 @@ registerRoutes.get("/address-block/:abId", async (c) => {
         },
       },
     },
-    orderBy: (registers, { asc }) => [asc(registers.addressOffset)],
+    orderBy: (_registers: any, { asc }: any) => [asc(_registers.addressOffset)],
   });
 
   return c.json({ data: result });
@@ -136,7 +136,7 @@ registerRoutes.get("/:regId/fields", async (c) => {
       resets: true,
       enumeratedValues: true,
     },
-    orderBy: (fields, { asc }) => [asc(fields.bitOffset)],
+    orderBy: (_fields: any, { asc }: any) => [asc(_fields.bitOffset)],
   });
 
   return c.json({ data: result });
@@ -150,13 +150,25 @@ registerRoutes.post(
     const regId = c.req.param("regId");
     const data = c.req.valid("json");
 
+    // Extract resetValue from data as it's not in fields table
+    // @ts-ignore - resetValue exists in schema but not in fields table definition inference
+    const { resetValue, ...fieldData } = data;
+
     const [newField] = await db
       .insert(fields)
       .values({
-        ...data,
+        ...fieldData,
         registerId: regId,
       })
       .returning();
+
+    if (resetValue) {
+      await db.insert(resets).values({
+        fieldId: newField.id,
+        value: resetValue,
+        resetTypeRef: "HARD", // Default to HARD reset
+      });
+    }
 
     return c.json({ data: newField }, 201);
   }
@@ -169,15 +181,44 @@ registerRoutes.put(
   async (c) => {
     const id = c.req.param("id");
     const data = c.req.valid("json");
+    // Extract resetValue
+    // @ts-ignore
+    const { resetValue, ...fieldData } = data;
 
     const [updated] = await db
       .update(fields)
       .set({
-        ...data,
+        ...fieldData,
         updatedAt: new Date(),
       })
       .where(eq(fields.id, id))
       .returning();
+
+    if (resetValue !== undefined) {
+      // Find existing reset (assume default/first one)
+      const existingReset = await db.query.resets.findFirst({
+        where: eq(resets.fieldId, id),
+      });
+
+      if (existingReset) {
+        if (resetValue === "") {
+          // Empty string -> delete
+          await db.delete(resets).where(eq(resets.id, existingReset.id));
+        } else {
+          // Update
+          await db.update(resets)
+            .set({ value: resetValue })
+            .where(eq(resets.id, existingReset.id));
+        }
+      } else if (resetValue !== "") {
+        // Create new
+        await db.insert(resets).values({
+          fieldId: id,
+          value: resetValue,
+          resetTypeRef: "HARD",
+        });
+      }
+    }
 
     if (!updated) {
       return c.json({ error: "Field not found", code: "NOT_FOUND" }, 404);

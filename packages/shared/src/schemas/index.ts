@@ -101,6 +101,8 @@ export const createFieldSchema = z.object({
   bitWidth: z.number().int().min(1).max(1024),
   volatile: z.boolean().optional(),
   typeIdentifier: z.string().max(255).optional(),
+  access: accessTypeSchema.default("read-write"),
+  resetValue: z.string().optional(),
 });
 
 export const updateFieldSchema = createFieldSchema.partial();

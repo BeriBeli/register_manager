@@ -1,28 +1,13 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Edit2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { clsx } from "clsx";
-
-interface Field {
-  id: string;
-  name: string;
-  bitOffset: number;
-  bitWidth: number;
-  access: string;
-  description?: string;
-}
-
-interface Register {
-  id: string;
-  name: string;
-  displayName?: string;
-  addressOffset: string;
-  size: number;
-  description?: string;
-  fields: Field[];
-}
+import type { Register } from "@register-manager/shared";
+import { getFieldAccess } from "@register-manager/shared";
 
 interface RegisterTableProps {
   registers: Register[];
+  onEdit?: (register: Register) => void;
+  onDelete?: (id: string) => void;
 }
 
 function AccessBadge({ access }: { access: string }) {
@@ -41,7 +26,7 @@ function AccessBadge({ access }: { access: string }) {
   return <span className={badgeClass}>{label}</span>;
 }
 
-export function RegisterTable({ registers }: RegisterTableProps) {
+export function RegisterTable({ registers, onEdit, onDelete }: RegisterTableProps) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   const toggleRow = (id: string) => {
@@ -64,6 +49,7 @@ export function RegisterTable({ registers }: RegisterTableProps) {
             <th className="table-cell table-header text-left">Name</th>
             <th className="table-cell table-header text-left">Size</th>
             <th className="table-cell table-header text-left">Description</th>
+            <th className="table-cell table-header text-right w-24">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -96,12 +82,40 @@ export function RegisterTable({ registers }: RegisterTableProps) {
                   <td className="table-cell text-surface-400 truncate max-w-xs">
                     {reg.description || "-"}
                   </td>
+                  <td className="table-cell">
+                    <div className="flex items-center justify-end gap-1">
+                      {onEdit && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(reg);
+                          }}
+                          className="p-1.5 hover:bg-surface-700 rounded text-surface-400 hover:text-primary-400 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {onDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(reg.id);
+                          }}
+                          className="p-1.5 hover:bg-surface-700 rounded text-surface-400 hover:text-red-400 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
 
                 {/* Expanded fields */}
                 {isExpanded && (
                   <tr key={`${reg.id}-fields`}>
-                    <td colSpan={5} className="p-0">
+                    <td colSpan={6} className="p-0">
                       <div className="bg-surface-800/50 border-y border-surface-700">
                         <table className="w-full">
                           <thead>
@@ -127,7 +141,7 @@ export function RegisterTable({ registers }: RegisterTableProps) {
                                     {field.name}
                                   </td>
                                   <td className="px-4 py-2">
-                                    <AccessBadge access={field.access} />
+                                    <AccessBadge access={getFieldAccess(field)} />
                                   </td>
                                   <td className="px-4 py-2 text-sm text-surface-400">
                                     {field.description || "-"}
