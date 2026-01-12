@@ -1,0 +1,24 @@
+{
+  "name": "register-manager",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:backend": "bun run --filter @register-manager/backend dev",
+    "dev:frontend": "bun run --filter @register-manager/frontend dev",
+    "build": "bun run --filter '*' build",
+    "db:generate": "bun run --filter @register-manager/backend db:generate",
+    "db:migrate": "bun run --filter @register-manager/backend db:migrate",
+    "db:studio": "bun run --filter @register-manager/backend db:studio",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run --filter '*' lint",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}
