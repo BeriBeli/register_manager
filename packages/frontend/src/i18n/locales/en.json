@@ -10,6 +10,59 @@
         "language": "Language",
         "version": "Version"
     },
+    "dashboard": {
+        "title": "Projects",
+        "overview": "Overview",
+        "total_projects": "Projects",
+        "recent_projects": "Recent Projects",
+        "new_project": "New Project",
+        "no_projects": "No projects yet",
+        "create_first": "Create First Project"
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Configure your workspace",
+        "tabs": {
+            "appearance": "Appearance",
+            "language": "Language",
+            "about": "About"
+        },
+        "appearance": {
+            "title": "Theme Preferences",
+            "description": "Choose how the application looks and feels.",
+            "light": {
+                "title": "Light Mode",
+                "description": "Clean and bright environment, properly illuminated."
+            },
+            "dark": {
+                "title": "Dark Mode",
+                "description": "Easy on the eyes, perfect for low-light conditions."
+            }
+        },
+        "language": {
+            "title": "Language Region",
+            "description": "Select your preferred language for the interface.",
+            "en": {
+                "title": "English",
+                "subtitle": "United States / International"
+            },
+            "zh": {
+                "title": "中文 (Chinese)",
+                "subtitle": "Simplified Chinese / 简体中文"
+            }
+        },
+        "about": {
+            "description": "A professional tool for hardware engineers and embedded developers to design, manage, and export Register Maps and Address Blocks with ease.",
+            "check_updates": "Check for Updates",
+            "report_issue": "Report Issue",
+            "core_frameworks": "Core Frameworks",
+            "legal": "Legal",
+            "privacy": "Privacy Policy",
+            "terms": "Terms of Service",
+            "licenses": "Open Source Licenses",
+            "footer": "Built with ❤️ for the hardware community."
+        }
+    },
     "common": {
         "loading": "Loading...",
         "error": "Error",

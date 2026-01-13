@@ -10,6 +10,59 @@
         "language": "语言",
         "version": "版本"
     },
+    "dashboard": {
+        "title": "项目",
+        "overview": "概览",
+        "total_projects": "项目总数",
+        "recent_projects": "最近项目",
+        "new_project": "新建项目",
+        "no_projects": "暂无项目",
+        "create_first": "创建第一个项目"
+    },
+    "settings": {
+        "title": "设置",
+        "subtitle": "配置您的工作区",
+        "tabs": {
+            "appearance": "外观",
+            "language": "语言",
+            "about": "关于"
+        },
+        "appearance": {
+            "title": "主题偏好",
+            "description": "选择应用程序的外观和风格。",
+            "light": {
+                "title": "浅色模式",
+                "description": "清晰明亮的环境，照明充足。"
+            },
+            "dark": {
+                "title": "深色模式",
+                "description": "舒适护眼，适合低光环境。"
+            }
+        },
+        "language": {
+            "title": "语言区域",
+            "description": "选择界面的首选语言。",
+            "en": {
+                "title": "English",
+                "subtitle": "United States / International"
+            },
+            "zh": {
+                "title": "中文 (Chinese)",
+                "subtitle": "Simplified Chinese / 简体中文"
+            }
+        },
+        "about": {
+            "description": "专为硬件工程师和嵌入式开发人员设计的专业工具，轻松设计、管理和导出寄存器映射与地址块。",
+            "check_updates": "检查更新",
+            "report_issue": "报告问题",
+            "core_frameworks": "核心框架",
+            "legal": "法律信息",
+            "privacy": "隐私政策",
+            "terms": "服务条款",
+            "licenses": "开源许可",
+            "footer": "为硬件社区 ❤️ 打造。"
+        }
+    },
     "common": {
         "loading": "加载中...",
         "error": "错误",

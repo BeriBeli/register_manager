@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, FolderOpen, Clock, ChevronRight, Trash2, LayoutDashboard } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../stores/registerStore";
 import { ProjectDialog } from "../components/project/ProjectDialog";
 
 export function Projects() {
+  const { t } = useTranslation();
   const projects = useRegisterStore((state) => state.projects);
   const isLoading = useRegisterStore((state) => state.isLoading);
   const fetchProjects = useRegisterStore((state) => state.fetchProjects);
@@ -30,8 +32,8 @@ export function Projects() {
             <LayoutDashboard className="w-5 h-5 text-surface-400" />
           </div>
           <div className="flex flex-col">
-            <h1 className="font-semibold text-surface-100 leading-tight tracking-tight">Projects</h1>
-            <span className="text-[10px] uppercase tracking-wider text-surface-400 font-medium">Overview</span>
+            <h1 className="font-semibold text-surface-100 leading-tight tracking-tight">{t('dashboard.title')}</h1>
+            <span className="text-[10px] uppercase tracking-wider text-surface-400 font-medium">{t('dashboard.overview')}</span>
           </div>
         </div>
 
@@ -44,30 +46,30 @@ export function Projects() {
           <div className="grid grid-cols-4 gap-4">
             <div className="card p-4 border-surface-700/50 shadow-sm bg-surface-800/20">
               <div className="text-2xl font-semibold text-surface-100">{projects.length}</div>
-              <div className="text-sm text-surface-400">Projects</div>
+              <div className="text-sm text-surface-400">{t('dashboard.total_projects')}</div>
             </div>
           </div>
 
           {/* Projects List */}
           <div className="card">
             <div className="p-4 border-b border-surface-700 flex items-center justify-between">
-              <h2 className="font-medium text-surface-200">Recent Projects</h2>
+              <h2 className="font-medium text-surface-200">{t('dashboard.recent_projects')}</h2>
               <button
                 onClick={() => setShowProjectDialog(true)}
                 className="btn-primary shadow-lg shadow-primary-500/20"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                New Project
+                {t('dashboard.new_project')}
               </button>
             </div>
             {isLoading ? (
-              <div className="p-12 text-center text-surface-400">Loading...</div>
+              <div className="p-12 text-center text-surface-400">{t('common.loading')}</div>
             ) : projects.length === 0 ? (
               <div className="p-12 text-center">
-                <p className="text-surface-400 mb-4">No projects yet</p>
+                <p className="text-surface-400 mb-4">{t('dashboard.no_projects')}</p>
                 <button className="btn-primary" onClick={() => setShowProjectDialog(true)}>
                   <Plus className="w-4 h-4" />
-                  Create First Project
+                  {t('dashboard.create_first')}
                 </button>
               </div>
             ) : (
@@ -106,12 +108,12 @@ export function Projects() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (confirm(`Are you sure you want to delete project "${project.name}" ? `)) {
+                            if (confirm(`${t('common.delete')} "${project.name}" ? `)) {
                               deleteProject(project.id);
                             }
                           }}
                           className="p-2 text-surface-500 hover:text-red-400 hover:bg-surface-700/50 rounded transition-colors z-10"
-                          title="Delete Project"
+                          title={t('common.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
