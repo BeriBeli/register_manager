@@ -188,3 +188,64 @@
     }
   }
 }
+
+/* Auth Page Styles */
+.auth-page {
+  @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-surface-950 via-surface-900 to-primary-950/30 p-4;
+}
+
+.auth-container {
+  @apply w-full max-w-md bg-surface-900/80 backdrop-blur-xl border border-surface-700/50 rounded-2xl p-8 shadow-2xl;
+}
+
+.auth-header {
+  @apply text-center mb-8;
+}
+
+.auth-logo {
+  @apply w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30;
+}
+
+.auth-title {
+  @apply text-2xl font-bold text-surface-50 mb-2;
+}
+
+.auth-subtitle {
+  @apply text-sm text-surface-400;
+}
+
+.auth-form {
+  @apply space-y-5;
+}
+
+.auth-form .form-group {
+  @apply space-y-2;
+}
+
+.auth-form label {
+  @apply block text-sm font-medium text-surface-300;
+}
+
+.auth-form input {
+  @apply input bg-surface-800/50 border-surface-600/50 focus:bg-surface-800;
+}
+
+.auth-error {
+  @apply p-3 bg-red-900/30 border border-red-700/50 text-red-400 text-sm rounded-lg;
+}
+
+.auth-button {
+  @apply btn-primary w-full py-3 text-base font-semibold mt-2 shadow-lg shadow-primary-600/25 hover:shadow-primary-600/40 transition-all;
+}
+
+.auth-button:disabled {
+  @apply opacity-70 cursor-not-allowed;
+}
+
+.auth-switch {
+  @apply mt-6 pt-6 border-t border-surface-700/50 text-center text-sm text-surface-400;
+}
+
+.auth-switch-button {
+  @apply ml-1 text-primary-400 hover:text-primary-300 font-medium transition-colors;
+}

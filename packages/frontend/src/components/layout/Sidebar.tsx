@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft, Sun, Moon, Globe } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft, Sun, Moon, Globe, LogOut, User, Settings, Shield } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../stores/themeStore";
 import { ProjectTree } from "./ProjectTree";
 import { SettingsDialog } from "../settings/SettingsDialog";
+import { useSession, signOut } from "../../lib/auth-client";
 
 const navigation = [
   { name: "Projects", href: "/", icon: LayoutDashboard },
@@ -13,9 +14,16 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const { data: session } = useSession();
   const isProjectView = location.pathname.startsWith("/project/");
   const [showSettings, setShowSettings] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+  };
 
   return (
     <>
@@ -66,27 +74,59 @@ export function Sidebar() {
                 </Link>
               );
             })}
+
+            {(session?.user as any)?.role === "admin" && (
+              <Link
+                to="/admin"
+                className={clsx(
+                  "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+                  location.pathname.startsWith("/admin")
+                    ? "bg-primary-600/20 text-primary-400"
+                    : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
+                )}
+              >
+                <Shield className="w-4 h-4" />
+                {t("sidebar.admin")}
+              </Link>
+            )}
           </nav>
         )}
 
         {/* Footer */}
         <div className="p-3 border-t border-surface-800 shrink-0">
-          {/* App Info - Trigger for Settings */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="w-full flex items-center gap-3 px-2 py-2 rounded bg-surface-800/0 hover:bg-surface-800 border border-surface-800/0 hover:border-surface-700 transition-all group cursor-pointer text-left"
-          >
-            <div className="w-8 h-8 rounded bg-primary-900/50 text-primary-400 flex items-center justify-center border border-primary-500/20 group-hover:border-primary-500/50 transition-colors">
-              <span className="font-bold text-xs">P</span>
-            </div>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-xs font-medium text-surface-200 truncate group-hover:text-surface-100 transition-colors">Register Manager</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <span className="text-[10px] text-surface-500 truncate group-hover:text-surface-400">Settings & Info</span>
+          {session?.user && (
+            <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-surface-800/40 border border-surface-700/30">
+              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-primary-500 to-primary-700 text-white flex items-center justify-center text-xs font-bold shadow-sm shadow-primary-900/20">
+                {session.user.name?.charAt(0).toUpperCase() || session.user.email.charAt(0).toUpperCase()}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="text-xs font-medium text-surface-200 truncate">
+                  {session.user.name || t("auth.user")}
+                </div>
+                <div className="text-[10px] text-surface-500 truncate font-mono">
+                  {session.user.email}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-0.5">
+                <button
+                  onClick={() => setShowSettings(true)}
+                  className="p-1.5 rounded-md text-surface-400 hover:text-surface-100 hover:bg-surface-700 transition-colors"
+                  title={t("settings.title")}
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="p-1.5 rounded-md text-surface-400 hover:text-red-400 hover:bg-surface-700 transition-colors"
+                  title={t("auth.logout")}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             </div>
-          </button>
+          )}
         </div>
       </aside>
 

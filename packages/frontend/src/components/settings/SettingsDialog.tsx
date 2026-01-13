@@ -1,8 +1,9 @@
-import { X, Moon, Sun, Globe, Info } from "lucide-react";
+import { X, Moon, Sun, Globe, Info, Lock, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../stores/themeStore";
 import { clsx } from "clsx";
 import { useState } from "react";
+import { changePassword } from "../../lib/auth-client";
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -11,234 +12,230 @@ interface SettingsDialogProps {
 export function SettingsDialog({ onClose }: SettingsDialogProps) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
-  const [activeTab, setActiveTab] = useState<'appearance' | 'language' | 'about'>('appearance');
+  const [activeTab, setActiveTab] = useState<"general" | "security">("general");
+
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+    setPasswordSuccess(false);
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await changePassword({
+        newPassword,
+        currentPassword,
+        revokeOtherSessions: true,
+      });
+
+      if (error) {
+        setPasswordError(error.message || "Failed to change password");
+      } else {
+        setPasswordSuccess(true);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err) {
+      setPasswordError("An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] backdrop-blur-[2px] p-4">
-      {/* 
-        Main Container: 
-        - Default large size (w-[900px], h-[600px])
-        - Min dimensions to prevent breaking
-        - `resize` class for user resizing
-      */}
-      <div className="bg-surface-900 border border-surface-700 rounded-xl shadow-2xl flex flex-col md:flex-row overflow-hidden resize-both min-w-[640px] min-h-[480px] w-[900px] h-[600px] max-w-[95vw] max-h-[95vh] relative text-surface-200">
-
-        {/* Sidebar */}
-        <div className="w-full md:w-56 bg-surface-950/50 border-b md:border-b-0 md:border-r border-surface-700/50 flex flex-row md:flex-col shrink-0">
-          <div className="p-4 md:p-6 shrink-0">
-            <h2 className="text-lg font-semibold text-surface-100 tracking-tight">{t('settings.title')}</h2>
-            <p className="text-xs text-surface-500 mt-1">{t('settings.subtitle')}</p>
-          </div>
-
-          <div className="flex-1 overflow-x-auto md:overflow-visible flex flex-row md:flex-col gap-1 px-3 pb-3">
-            <button
-              onClick={() => setActiveTab('appearance')}
-              className={clsx(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'appearance'
-                  ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
-                  : "text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 border border-transparent"
-              )}
-            >
-              <Sun className="w-4 h-4" />
-              <span>{t('settings.tabs.appearance')}</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('language')}
-              className={clsx(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                activeTab === 'language'
-                  ? "bg-primary-500/10 text-primary-400 border border-primary-500/20"
-                  : "text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 border border-transparent"
-              )}
-            >
-              <Globe className="w-4 h-4" />
-              <span>{t('settings.tabs.language')}</span>
-            </button>
-
-            <div className="flex-1 hidden md:block" />
-
-            <button
-              onClick={() => setActiveTab('about')}
-              className={clsx(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all md:mt-auto",
-                activeTab === 'about'
-                  ? "bg-surface-800 text-surface-100 border border-surface-700"
-                  : "text-surface-400 hover:text-surface-200 hover:bg-surface-800/50 border border-transparent"
-              )}
-            >
-              <Info className="w-4 h-4" />
-              <span>{t('settings.tabs.about')}</span>
-            </button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="w-full max-w-4xl bg-surface-900 border border-surface-800 rounded-xl shadow-2xl flex flex-col h-[80vh] overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-surface-800 bg-surface-900 shrink-0">
+          <h2 className="text-lg font-medium text-surface-100">{t("settings.title")}</h2>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-surface-400 hover:text-surface-100 hover:bg-surface-800 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-surface-900/50 relative">
-
-          {/* Close Button / Header */}
-          <div className="absolute top-4 right-4 z-10">
+        {/* Content - Two Columns */}
+        <div className="flex flex-1 min-h-0">
+          {/* Sidebar */}
+          <div className="w-64 border-r border-surface-800 p-2 space-y-1 bg-surface-900/50">
             <button
-              onClick={onClose}
-              className="p-2 text-surface-400 hover:text-surface-100 bg-surface-800/50 hover:bg-surface-800 rounded-lg transition-colors border border-transparent hover:border-surface-700"
+              onClick={() => setActiveTab("general")}
+              className={clsx(
+                "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
+                activeTab === "general"
+                  ? "bg-primary-600/20 text-primary-400"
+                  : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
+              )}
             >
-              <X className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
+              {t("settings.tabs.general")}
+            </button>
+            <button
+              onClick={() => setActiveTab("security")}
+              className={clsx(
+                "w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors text-left",
+                activeTab === "security"
+                  ? "bg-primary-600/20 text-primary-400"
+                  : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
+              )}
+            >
+              <Lock className="w-4 h-4" />
+              {t("settings.tabs.security")}
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8">
-            {activeTab === 'appearance' && (
-              <div className="space-y-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div>
-                  <h3 className="text-xl font-medium text-surface-100 mb-2">{t('settings.appearance.title')}</h3>
-                  <p className="text-surface-400 mb-6">{t('settings.appearance.description')}</p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <button
-                      onClick={() => setTheme('light')}
-                      className={clsx(
-                        "group relative p-4 rounded-xl border-2 transition-all flex flex-col items-start gap-4 text-left overflow-hidden bg-white",
-                        theme === 'light'
-                          ? "border-primary-500 shadow-xl shadow-primary-900/10 ring-1 ring-primary-500"
-                          : "border-slate-200 hover:border-slate-300"
-                      )}
-                    >
-                      <div className="w-full h-24 rounded-lg bg-slate-50 border border-slate-200 relative overflow-hidden group-hover:scale-[1.02] transition-transform origin-top">
-                        <div className="absolute top-2 left-2 w-16 h-8 bg-white rounded shadow-sm border border-slate-100" />
-                        <div className="absolute top-12 left-2 right-2 h-2 bg-slate-200 rounded-full" />
-                        <div className="absolute top-16 left-2 right-8 h-2 bg-slate-200 rounded-full" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Sun className={clsx("w-4 h-4", theme === 'light' ? "text-primary-600" : "text-slate-500")} />
-                          <span className={clsx("font-medium", theme === 'light' ? "text-primary-600" : "text-slate-700")}>{t('settings.appearance.light.title')}</span>
-                        </div>
-                        <p className="text-xs text-slate-500">{t('settings.appearance.light.description')}</p>
-                      </div>
-                    </button>
-
-                    <button
-                      onClick={() => setTheme('dark')}
-                      className={clsx(
-                        "group relative p-4 rounded-xl border-2 transition-all flex flex-col items-start gap-4 text-left overflow-hidden bg-slate-950",
-                        theme === 'dark'
-                          ? "border-primary-500 shadow-xl shadow-primary-900/10 ring-1 ring-primary-500"
-                          : "border-slate-800 hover:border-slate-700"
-                      )}
-                    >
-                      <div className="w-full h-24 rounded-lg bg-slate-900 border border-slate-800 relative overflow-hidden group-hover:scale-[1.02] transition-transform origin-top">
-                        <div className="absolute top-2 left-2 w-16 h-8 bg-slate-800 rounded border border-slate-700" />
-                        <div className="absolute top-12 left-2 right-2 h-2 bg-slate-800 rounded-full" />
-                        <div className="absolute top-16 left-2 right-8 h-2 bg-slate-800 rounded-full" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Moon className={clsx("w-4 h-4", theme === 'dark' ? "text-primary-400 border border-slate-700" : "text-slate-400")} />
-                          <span className={clsx("font-medium", theme === 'dark' ? "text-primary-400" : "text-slate-200")}>{t('settings.appearance.dark.title')}</span>
-                        </div>
-                        <p className="text-xs text-slate-400">{t('settings.appearance.dark.description')}</p>
-                      </div>
-                    </button>
+          {/* Main Content */}
+          <div className="flex-1 p-8 overflow-y-auto bg-surface-950/30">
+            {activeTab === "general" ? (
+              <div className="space-y-8 max-w-2xl">
+                {/* Theme Section */}
+                <section>
+                  <h3 className="text-sm font-medium text-surface-400 uppercase mb-4">{t("settings.appearance.title")}</h3>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { value: "light", icon: Sun, label: t("settings.appearance.light.title") },
+                      { value: "dark", icon: Moon, label: t("settings.appearance.dark.title") },
+                      { value: "system", icon: Globe, label: t("settings.appearance.system.title") },
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => setTheme(option.value as any)}
+                        className={clsx(
+                          "flex flex-col items-center gap-2 p-3 rounded-lg border transition-all",
+                          theme === option.value
+                            ? "bg-primary-600/10 border-primary-600/50 text-primary-400"
+                            : "bg-surface-800/50 border-surface-700 hover:border-surface-600 text-surface-400"
+                        )}
+                      >
+                        <option.icon className="w-5 h-5" />
+                        <span className="text-xs font-medium">{option.label}</span>
+                      </button>
+                    ))}
                   </div>
-                </div>
-              </div>
-            )}
+                </section>
 
-            {activeTab === 'language' && (
-              <div className="space-y-8 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div>
-                  <h3 className="text-xl font-medium text-surface-100 mb-2">{t('settings.language.title')}</h3>
-                  <p className="text-surface-400 mb-6">{t('settings.language.description')}</p>
-
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => i18n.changeLanguage('en')}
-                      className={clsx(
-                        "w-full p-4 rounded-xl border-2 text-left flex items-center justify-between transition-all group",
-                        i18n.language.startsWith('en')
-                          ? "border-primary-500 bg-surface-800 shadow-lg shadow-black/20"
-                          : "border-surface-700 bg-surface-800/30 hover:border-surface-600 hover:bg-surface-800"
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-lg shadow-inner">🇺🇸</div>
-                        <div>
-                          <div className={clsx("font-medium", i18n.language.startsWith('en') ? "text-primary-400" : "text-surface-200")}>{t('settings.language.en.title')}</div>
-                          <div className="text-xs text-surface-500">{t('settings.language.en.subtitle')}</div>
-                        </div>
-                      </div>
-                      {i18n.language.startsWith('en') && <div className="w-3 h-3 rounded-full bg-primary-500 shadow-lg shadow-primary-500/50" />}
-                    </button>
-
-                    <button
-                      onClick={() => i18n.changeLanguage('zh')}
-                      className={clsx(
-                        "w-full p-4 rounded-xl border-2 text-left flex items-center justify-between transition-all group",
-                        i18n.language.startsWith('zh')
-                          ? "border-primary-500 bg-surface-800 shadow-lg shadow-black/20"
-                          : "border-surface-700 bg-surface-800/30 hover:border-surface-600 hover:bg-surface-800"
-                      )}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center text-lg shadow-inner">🇨🇳</div>
-                        <div>
-                          <div className={clsx("font-medium", i18n.language.startsWith('zh') ? "text-primary-400" : "text-surface-200")}>{t('settings.language.zh.title')}</div>
-                          <div className="text-xs text-surface-500">{t('settings.language.zh.subtitle')}</div>
-                        </div>
-                      </div>
-                      {i18n.language.startsWith('zh') && <div className="w-3 h-3 rounded-full bg-primary-500 shadow-lg shadow-primary-500/50" />}
-                    </button>
+                {/* Language Section */}
+                <section>
+                  <h3 className="text-sm font-medium text-surface-400 uppercase mb-4">{t("settings.language.title")}</h3>
+                  <div className="flex gap-3">
+                    {['en', 'zh'].map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => i18n.changeLanguage(lang)}
+                        className={clsx(
+                          "px-4 py-2 rounded-md border text-sm font-medium transition-colors uppercase",
+                          i18n.language === lang
+                            ? "bg-primary-600/10 border-primary-600/50 text-primary-400"
+                            : "bg-surface-800/50 border-surface-700 hover:border-surface-600 text-surface-400"
+                        )}
+                      >
+                        {lang === 'en' ? 'English' : '中文'}
+                      </button>
+                    ))}
                   </div>
-                </div>
-              </div>
-            )}
+                </section>
 
-            {activeTab === 'about' && (
-              <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex items-start gap-8">
-                  <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-2xl shadow-primary-900/50 shrink-0 transform rotate-3">
-                    <span className="font-bold text-white text-5xl">R</span>
-                  </div>
-                  <div>
-                    <h3 className="text-3xl font-bold text-surface-100 tracking-tight">Register Manager</h3>
-                    <p className="text-primary-400 font-mono text-sm mt-1 mb-4">{t('sidebar.version')} 1.0.0 (Beta)</p>
-                    <p className="text-surface-300 leading-relaxed mb-6">
-                      {t('settings.about.description')}
-                    </p>
-
-                    <div className="flex gap-4">
-                      <button className="btn-secondary text-xs py-1.5 px-3">{t('settings.about.check_updates')}</button>
-                      <button className="btn-ghost text-xs py-1.5 px-3">{t('settings.about.report_issue')}</button>
+                {/* Info Section */}
+                <section className="pt-4 border-t border-surface-800">
+                  <div className="flex items-start gap-3 p-3 bg-surface-800/30 rounded-lg">
+                    <Info className="w-5 h-5 text-surface-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-surface-400">
+                      <p className="font-medium text-surface-300 mb-1">Register Manager v0.1.0</p>
+                      <p>Open source tool for managing hardware registers and generating output files.</p>
                     </div>
                   </div>
+                </section>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-surface-100">{t("settings.security.title")}</h3>
+                  <p className="text-sm text-surface-400">{t("settings.security.description")}</p>
                 </div>
 
-                <div className="mt-12 pt-8 border-t border-surface-700/50 grid grid-cols-2 gap-8">
+                <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
                   <div>
-                    <h4 className="text-sm font-semibold text-surface-200 mb-3">{t('settings.about.core_frameworks')}</h4>
-                    <ul className="space-y-2 text-sm text-surface-500">
-                      <li>React 18</li>
-                      <li>Tailwind CSS</li>
-                      <li>Zustand</li>
-                      <li>Vite</li>
-                    </ul>
+                    <label className="block text-xs font-medium text-surface-300 mb-1.5">{t("settings.security.currentPassword")}</label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full bg-surface-800 border-surface-700 rounded-md px-3 py-2 text-sm text-surface-100 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+                      placeholder={t("settings.security.placeholders.current")}
+                      required
+                    />
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-surface-200 mb-3">{t('settings.about.legal')}</h4>
-                    <ul className="space-y-2 text-sm text-surface-500">
-                      <li className="hover:text-primary-400 cursor-pointer transition-colors">{t('settings.about.privacy')}</li>
-                      <li className="hover:text-primary-400 cursor-pointer transition-colors">{t('settings.about.terms')}</li>
-                      <li className="hover:text-primary-400 cursor-pointer transition-colors">{t('settings.about.licenses')}</li>
-                    </ul>
+                    <label className="block text-xs font-medium text-surface-300 mb-1.5">{t("settings.security.newPassword")}</label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full bg-surface-800 border-surface-700 rounded-md px-3 py-2 text-sm text-surface-100 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+                      placeholder={t("settings.security.placeholders.new")}
+                      required
+                      minLength={8}
+                    />
                   </div>
-                </div>
+                  <div>
+                    <label className="block text-xs font-medium text-surface-300 mb-1.5">{t("settings.security.confirmPassword")}</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full bg-surface-800 border-surface-700 rounded-md px-3 py-2 text-sm text-surface-100 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all"
+                      placeholder={t("settings.security.placeholders.confirm")}
+                      required
+                      minLength={8}
+                    />
+                  </div>
 
-                <div className="mt-12 text-center text-xs text-surface-600">
-                  {t('settings.about.footer')}
-                </div>
+                  {passwordError && (
+                    <div className="text-xs text-red-400 bg-red-900/10 border border-red-900/20 p-3 rounded-md flex items-start gap-2">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                      {passwordError}
+                    </div>
+                  )}
+
+                  {passwordSuccess && (
+                    <div className="text-xs text-green-400 bg-green-900/10 border border-green-900/20 p-3 rounded-md flex items-start gap-2">
+                      <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                      <span>{t("settings.security.messages.success")}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      disabled={loading || passwordSuccess}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-sm font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    >
+                      {loading ? t("settings.security.button.loading") : t("settings.security.button.submit")}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
+
           </div>
         </div>
       </div>

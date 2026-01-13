@@ -8,7 +8,8 @@
             "system": "System"
         },
         "language": "Language",
-        "version": "Version"
+        "version": "Version",
+        "admin": "Admin Area"
     },
     "dashboard": {
         "title": "Projects",
@@ -23,6 +24,8 @@
         "title": "Settings",
         "subtitle": "Configure your workspace",
         "tabs": {
+            "general": "General",
+            "security": "Security",
             "appearance": "Appearance",
             "language": "Language",
             "about": "About"
@@ -37,6 +40,10 @@
             "dark": {
                 "title": "Dark Mode",
                 "description": "Easy on the eyes, perfect for low-light conditions."
+            },
+            "system": {
+                "title": "System",
+                "description": "Follows your system settings."
             }
         },
         "language": {
@@ -61,6 +68,29 @@
             "terms": "Terms of Service",
             "licenses": "Open Source Licenses",
             "footer": "Built with ❤️ for the hardware community."
+        },
+        "security": {
+            "title": "Change Password",
+            "description": "Update your account password. You will be logged out of other sessions.",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "placeholders": {
+                "current": "Enter current password",
+                "new": "Min. 8 characters",
+                "confirm": "Confirm new password"
+            },
+            "messages": {
+                "matchError": "New passwords do not match",
+                "lengthError": "Password must be at least 8 characters",
+                "success": "Password updated successfully.",
+                "error": "An error occurred",
+                "genericError": "Failed to change password"
+            },
+            "button": {
+                "submit": "Update Password",
+                "loading": "Updating..."
+            }
         }
     },
     "common": {
@@ -70,5 +100,62 @@
         "cancel": "Cancel",
         "delete": "Delete",
         "confirm": "Confirm"
+    },
+    "auth": {
+        "login": "Sign In",
+        "register": "Sign Up",
+        "logout": "Sign Out",
+        "email": "Email",
+        "password": "Password",
+        "name": "Name",
+        "emailPlaceholder": "Enter your email",
+        "passwordPlaceholder": "Enter your password",
+        "namePlaceholder": "Enter your name",
+        "welcomeBack": "Welcome back! Please sign in to your account.",
+        "createAccount": "Create a new account to get started.",
+        "noAccount": "Don't have an account?",
+        "hasAccount": "Already have an account?",
+        "loginFailed": "Login failed. Please check your credentials.",
+        "registerFailed": "Registration failed. Please try again.",
+        "loading": "Please wait...",
+        "user": "User"
+    },
+    "admin": {
+        "users": {
+            "title": "User Management",
+            "subtitle": "Manage user access and approvals",
+            "table": {
+                "user": "User",
+                "role": "Role",
+                "status": "Status",
+                "joined": "Joined",
+                "actions": "Actions"
+            },
+            "status": {
+                "active": "Active",
+                "pending": "Pending"
+            },
+            "actions": {
+                "approve": "Approve",
+                "resetPassword": "Reset Password",
+                "delete": "Delete User",
+                "cancel": "Cancel",
+                "reset": "Reset",
+                "resetting": "Resetting..."
+            },
+            "messages": {
+                "confirmDelete": "Are you sure you want to delete this user? This action cannot be undone.",
+                "deleteFailed": "Failed to delete user",
+                "approveFailed": "Failed to approve user",
+                "loadFailed": "Failed to load users",
+                "noUsers": "No users found"
+            },
+            "resetModal": {
+                "title": "Reset Password",
+                "description": "Set a new password for {{name}}.",
+                "placeholder": "New password",
+                "success": "Password reset successfully!"
+            }
+        }
     }
 }

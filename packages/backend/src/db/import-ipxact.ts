@@ -1,7 +1,7 @@
 import { parseStringPromise } from "xml2js";
 import { readFileSync, existsSync } from "fs";
 import { db } from "./index";
-import { projects, memoryMaps, addressBlocks, registers, fields, resets, users } from "./schema";
+import { projects, memoryMaps, addressBlocks, registers, fields, resets, user } from "./schema";
 
 interface IpxactField {
   "ipxact:name": string[];
@@ -78,29 +78,33 @@ async function importIpxactXml(xmlFilePath: string) {
 
   console.log(`📦 Component VLNV: ${vlnv.vendor}:${vlnv.library}:${vlnv.name}:${vlnv.version}`);
 
-  // Get or create default user
-  let user = await db.query.users.findFirst({
-    where: (users, { eq }) => eq(users.email, "test@example.com"),
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  if (!adminEmail) {
+    console.warn("⚠️ ADMIN_EMAIL not set in environment variables. Using default 'admin@example.com'.");
+  }
+
+  const targetEmail = adminEmail || "admin@example.com";
+
+  // Get admin user for import
+  const existingUser = await db.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, targetEmail),
   });
 
-  if (!user) {
-    console.log("👤 Creating default user...");
-    [user] = await db
-      .insert(users)
-      .values({
-        email: "test@example.com",
-        name: "Test User",
-        passwordHash: "placeholder", // In production, use proper password hashing
-      })
-      .returning();
+  if (!existingUser) {
+    console.error(`❌ Admin user '${targetEmail}' not found in database.`);
+    console.error("👉 Please ensure you have run the seed script (bun run db:seed) or configured .env correctly.");
+    process.exit(1);
   }
+
+  console.log(`👤 Using admin user: ${existingUser.name} (${existingUser.email})`);
 
   // Create project
   console.log("📁 Creating project...");
   const [project] = await db
     .insert(projects)
     .values({
-      userId: user.id,
+      userId: existingUser.id,
       name: vlnv.name,
       displayName: `${vlnv.vendor} - ${vlnv.name}`,
       description: `Imported from IP-XACT: ${vlnv.vendor}:${vlnv.library}:${vlnv.name}:${vlnv.version}`,

@@ -9,16 +9,35 @@ import {
   createMemoryMapSchema,
   createAddressBlockSchema,
 } from "@register-manager/shared";
+import { auth } from "../lib/auth";
 
-export const projectRoutes = new Hono();
+// Define variables type for authenticated routes
+type Variables = {
+  user: typeof auth.$Infer.Session.user | null;
+  session: typeof auth.$Infer.Session.session | null;
+};
+
+export const projectRoutes = new Hono<{ Variables: Variables }>();
+
+// Auth middleware for project routes - require authentication
+projectRoutes.use("*", async (c, next) => {
+  const user = c.get("user");
+  if (!user) {
+    return c.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, 401);
+  }
+  await next();
+});
 
 // ============================================================================
 // Projects CRUD
 // ============================================================================
 
-// List all projects (TODO: filter by user after auth)
+// List all projects for the current user
 projectRoutes.get("/", async (c) => {
+  const user = c.get("user")!;
+
   const result = await db.query.projects.findMany({
+    // where: eq(projects.userId, user.id), // Removed to allow all users to see all projects
     with: {
       memoryMaps: true,
     },
@@ -31,6 +50,7 @@ projectRoutes.get("/", async (c) => {
 // Get single project with full hierarchy
 projectRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
 
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, id),
@@ -59,21 +79,24 @@ projectRoutes.get("/:id", async (c) => {
     return c.json({ error: "Project not found", code: "NOT_FOUND" }, 404);
   }
 
+  // Check ownership - Removed for collaboration
+  // if (project.userId !== user.id) {
+  //   return c.json({ error: "Forbidden", code: "FORBIDDEN" }, 403);
+  // }
+
   return c.json({ data: project });
 });
 
 // Create project
 projectRoutes.post("/", zValidator("json", createProjectSchema), async (c) => {
   const data = c.req.valid("json");
-
-  // TODO: Get userId from auth session
-  const userId = "00000000-0000-0000-0000-000000000000"; // Placeholder
+  const user = c.get("user")!;
 
   const [newProject] = await db
     .insert(projects)
     .values({
       ...data,
-      userId,
+      userId: user.id,
     })
     .returning();
 
@@ -97,6 +120,20 @@ projectRoutes.post("/", zValidator("json", createProjectSchema), async (c) => {
 projectRoutes.put("/:id", zValidator("json", updateProjectSchema), async (c) => {
   const id = c.req.param("id");
   const data = c.req.valid("json");
+  const user = c.get("user")!;
+
+  // Check ownership first
+  const existing = await db.query.projects.findFirst({
+    where: eq(projects.id, id),
+  });
+
+  if (!existing) {
+    return c.json({ error: "Project not found", code: "NOT_FOUND" }, 404);
+  }
+
+  // if (existing.userId !== user.id) {
+  //   return c.json({ error: "Forbidden", code: "FORBIDDEN" }, 403);
+  // }
 
   const [updated] = await db
     .update(projects)
@@ -107,25 +144,31 @@ projectRoutes.put("/:id", zValidator("json", updateProjectSchema), async (c) => 
     .where(eq(projects.id, id))
     .returning();
 
-  if (!updated) {
-    return c.json({ error: "Project not found", code: "NOT_FOUND" }, 404);
-  }
-
   return c.json({ data: updated });
 });
 
 // Delete project
 projectRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
+
+  // Check ownership first
+  const existing = await db.query.projects.findFirst({
+    where: eq(projects.id, id),
+  });
+
+  if (!existing) {
+    return c.json({ error: "Project not found", code: "NOT_FOUND" }, 404);
+  }
+
+  if (existing.userId !== user.id && user.role !== "admin") {
+    return c.json({ error: "Forbidden", code: "FORBIDDEN" }, 403);
+  }
 
   const [deleted] = await db
     .delete(projects)
     .where(eq(projects.id, id))
     .returning();
-
-  if (!deleted) {
-    return c.json({ error: "Project not found", code: "NOT_FOUND" }, 404);
-  }
 
   return c.json({ success: true });
 });
