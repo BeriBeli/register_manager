@@ -126,7 +126,7 @@ The application uses a hierarchical data model:
 
 ## Roadmap
 
-### Highest Priority
+### Final Priority
 
 - [ ] **TGI API Compliance** - Implement IEEE 1685-2022 IP-XACT TGI (Tool Generator Interface) compatible API layer at `/tgi/*` for external EDA tool integration. See [API Compliance Analysis](docs/api_compliance_analysis.md) for details.
 
