@@ -67,8 +67,15 @@ export function Sidebar() {
 
       {/* Footer */}
       <div className="p-3 border-t border-surface-800 shrink-0">
-        <div className="text-xs text-surface-500 text-center">
-          IP-XACT 2022
+        <div className="flex items-center gap-3 px-2 py-1 rounded bg-surface-800/50 border border-surface-800/50">
+          <div className="w-8 h-8 rounded bg-primary-900/50 text-primary-400 flex items-center justify-center border border-primary-500/20">
+            <span className="font-bold text-xs">RM</span>
+          </div>
+          <div className="flex flex-col overflow-hidden">
+            <span className="text-xs font-medium text-surface-200 truncate">Register Manager</span>
+            <span className="text-[10px] text-surface-500 truncate">v1.0.0</span>
+          </div>
+          {/* Simple user/settings placeholder since user asked for red area actions to be moved/consolidated */}
         </div>
       </div>
     </aside>
