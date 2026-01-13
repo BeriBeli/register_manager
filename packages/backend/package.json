@@ -13,16 +13,19 @@
         "db:generate": "drizzle-kit generate",
         "db:migrate": "bun run src/db/migrate.ts",
         "db:seed": "bun run src/db/seed.ts",
-        "db:studio": "drizzle-kit studio"
+        "db:studio": "drizzle-kit studio",
+        "db:import": "bun run src/db/import-ipxact.ts"
     },
     "dependencies": {
         "@hono/zod-validator": "^0.7.6",
         "@register-manager/shared": "workspace:*",
+        "@types/xml2js": "^0.4.14",
         "better-auth": "^1.1.0",
         "drizzle-orm": "^0.45.1",
         "fast-xml-parser": "^4.5.0",
         "hono": "^4.6.0",
         "postgres": "^3.4.0",
+        "xml2js": "^0.6.2",
         "zod": "^3.24.0"
     },
     "devDependencies": {

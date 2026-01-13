@@ -72,7 +72,12 @@ bun run build
 
 # Open Drizzle Studio (database GUI)
 bun run db:studio
+
+# Import IP-XACT XML file for testing
+bun run db:import [path/to/file.xml]
 ```
+
+For more details on importing IP-XACT files, see [IP-XACT Import Guide](docs/ipxact-import.md).
 
 ## Project Structure
 
