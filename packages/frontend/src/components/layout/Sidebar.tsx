@@ -6,10 +6,7 @@ import { useThemeStore } from "../../stores/themeStore";
 import { ProjectTree } from "./ProjectTree";
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  // Remove Projects/Registers/etc as they are context dependent or redundant with Dashboard
-  { name: "Export", href: "/export", icon: FileCode },
-  { name: "Docs", href: "/docs", icon: BookOpen },
+  { name: "Projects", href: "/", icon: LayoutDashboard },
 ];
 
 export function Sidebar() {
@@ -39,7 +36,7 @@ export function Sidebar() {
               className="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-200 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
-              {t('sidebar.back_to_dashboard')}
+              {t('sidebar.back_to_projects')}
             </Link>
           </div>
 

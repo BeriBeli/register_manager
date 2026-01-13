@@ -1,9 +1,7 @@
 {
     "sidebar": {
-        "dashboard": "仪表盘",
-        "export": "导出",
-        "docs": "文档",
-        "back_to_dashboard": "返回仪表盘",
+        "projects": "所有项目",
+        "back_to_projects": "返回所有项目",
         "theme": {
             "light": "浅色模式",
             "dark": "深色模式",

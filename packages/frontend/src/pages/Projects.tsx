@@ -4,7 +4,7 @@ import { Plus, FolderOpen, Clock, ChevronRight, Trash2, LayoutDashboard } from "
 import { useRegisterStore } from "../stores/registerStore";
 import { ProjectDialog } from "../components/project/ProjectDialog";
 
-export function Dashboard() {
+export function Projects() {
   const projects = useRegisterStore((state) => state.projects);
   const isLoading = useRegisterStore((state) => state.isLoading);
   const fetchProjects = useRegisterStore((state) => state.fetchProjects);
@@ -21,14 +21,6 @@ export function Dashboard() {
     fetchProjects();
   };
 
-  const totalRegisters = projects.reduce((acc, p) => {
-    return acc + (p.memoryMaps?.reduce((sum, mm) => {
-      return sum + (mm.addressBlocks?.reduce((s, ab) => s + (ab.registers?.length || 0), 0) || 0);
-    }, 0) || 0);
-  }, 0);
-
-  const totalMemoryMaps = projects.reduce((acc, p) => acc + (p.memoryMaps?.length || 0), 0);
-
   return (
     <div className="h-full flex flex-col bg-surface-950">
       {/* Dashboard Header */}
@@ -38,7 +30,7 @@ export function Dashboard() {
             <LayoutDashboard className="w-5 h-5 text-surface-400" />
           </div>
           <div className="flex flex-col">
-            <h1 className="font-semibold text-surface-100 leading-tight tracking-tight">Dashboard</h1>
+            <h1 className="font-semibold text-surface-100 leading-tight tracking-tight">Projects</h1>
             <span className="text-[10px] uppercase tracking-wider text-surface-400 font-medium">Overview</span>
           </div>
         </div>
@@ -53,18 +45,6 @@ export function Dashboard() {
             <div className="card p-4 border-surface-700/50 shadow-sm bg-surface-800/20">
               <div className="text-2xl font-semibold text-surface-100">{projects.length}</div>
               <div className="text-sm text-surface-400">Projects</div>
-            </div>
-            <div className="card p-4 border-surface-700/50 shadow-sm bg-surface-800/20">
-              <div className="text-2xl font-semibold text-surface-100">{totalRegisters}</div>
-              <div className="text-sm text-surface-400">Registers</div>
-            </div>
-            <div className="card p-4 border-surface-700/50 shadow-sm bg-surface-800/20">
-              <div className="text-2xl font-semibold text-surface-100">{totalMemoryMaps}</div>
-              <div className="text-sm text-surface-400">Memory Maps</div>
-            </div>
-            <div className="card p-4 border-surface-700/50 shadow-sm bg-surface-800/20">
-              <div className="text-2xl font-semibold text-primary-400">IP-XACT 2022</div>
-              <div className="text-sm text-surface-400">Standard</div>
             </div>
           </div>
 
