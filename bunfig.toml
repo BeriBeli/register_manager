@@ -1,11 +1,8 @@
 [install]
-# 使用 Bun 的快速安装
 auto = "fallback"
 
 [install.lockfile]
-# 生成锁文件
 save = true
 
 [run]
-# 并行运行脚本
 bun = true

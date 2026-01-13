@@ -1,76 +1,156 @@
 # Register Manager
 
-基于 IEEE 1685-2022 IP-XACT TGI API 规范的寄存器管理工具。
+A register management tool based on the IEEE 1685-2022 IP-XACT TGI API specification.
 
-## 功能特性
+## Features
 
-- 🎨 可视化寄存器编辑
-- 📊 实时位域渲染
-- 📤 多格式导出 (IP-XACT XML, C Header, UVM RAL, HTML)
-- 👥 多用户支持
+### Implemented ✅
 
-## 技术栈
+- 🎨 **Visual Register Editor** - Interactive UI for creating and editing registers with bit fields
+- 📊 **Real-time Bit Field Rendering** - Interactive bit field visualization with drag-to-select range creation
+- �️ **Hierarchical Structure** - Support for Memory Maps → Address Blocks → Registers → Fields hierarchy
+- �📤 **Multi-format Export**
+  - IP-XACT XML - IEEE 1685-2022 compliant format
+  - C Header Files - with configurable endianness and access macros
+  - UVM RAL - SystemVerilog register abstraction layer
+  - HTML Documentation - standalone documentation export
+- 🎯 **Field Properties** - Full support for field access types, reset values, enumerated values
+- 🌐 **Internationalization (i18n)** - Multi-language support infrastructure
 
-- **运行时**: Bun
-- **后端**: Hono + Drizzle ORM + PostgreSQL
-- **前端**: React + TypeScript + Tailwind CSS
-- **认证**: Better Auth
+### In Progress 🚧
 
-## 快速开始
+- � **Authentication** - Basic auth routes defined (Better Auth integration planned)
 
-### 前置条件
+## Tech Stack
+
+- **Runtime**: Bun
+- **Backend**: Hono + Drizzle ORM + PostgreSQL
+- **Frontend**: React + TypeScript + Tailwind CSS + Vite
+- **Shared**: Zod schemas for type-safe validation
+
+## Quick Start
+
+### Prerequisites
 
 - [Bun](https://bun.sh/) >= 1.0
 - [PostgreSQL](https://www.postgresql.org/) >= 14
 
-### 安装
+### Installation
 
 ```bash
-# 安装依赖
+# Install dependencies
 bun install
 
-# 配置环境变量
+# Configure environment variables
 cp .env.example packages/backend/.env
-# 编辑 packages/backend/.env 文件设置数据库连接
+# Edit packages/backend/.env to set database connection
 
-# 运行数据库迁移
+# Run database migrations
 bun run db:migrate
 
-# 添加测试用户（开发环境）
+# Add test user (development)
 bun run db:seed
 
-# 启动开发服务器
+# Start development server
 bun run dev
 ```
 
-### 开发命令
+### Development Commands
 
 ```bash
-# 仅启动后端
+# Start backend only
 bun run dev:backend
 
-# 仅启动前端
+# Start frontend only
 bun run dev:frontend
 
-# 运行测试
+# Run tests
 bun run test
 
-# 构建生产版本
+# Build for production
 bun run build
+
+# Open Drizzle Studio (database GUI)
+bun run db:studio
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 register_manager/
 ├── packages/
-│   ├── shared/      # 共享类型和工具
-│   ├── backend/     # 后端服务 (Hono)
-│   └── frontend/    # 前端应用 (React)
-├── TGI.yaml         # IP-XACT TGI API 规范
-└── package.json     # 根配置
+│   ├── shared/              # Shared types, schemas, and utilities
+│   │   └── src/
+│   │       ├── types/       # TypeScript type definitions
+│   │       ├── schemas/     # Zod validation schemas
+│   │       └── utils/       # Shared utility functions
+│   ├── backend/             # Backend service (Hono)
+│   │   └── src/
+│   │       ├── db/          # Database schema and migrations
+│   │       ├── routes/      # API route handlers
+│   │       └── services/    # Business logic and generators
+│   └── frontend/            # Frontend application (React)
+│       └── src/
+│           ├── components/  # Reusable UI components
+│           ├── pages/       # Page components
+│           ├── stores/      # State management
+│           └── i18n/        # Internationalization
+├── docs/                    # Documentation
+│   └── api_compliance_analysis.md
+├── TGI.yaml                 # IP-XACT TGI API specification
+└── package.json             # Root monorepo configuration
 ```
 
-## 许可证
+## Database Schema
+
+The application uses a hierarchical data model:
+
+- **Users** - User accounts (authentication pending)
+- **Projects** - Top-level container for register designs
+- **Memory Maps** - Memory region definitions within a project
+- **Address Blocks** - Contiguous memory ranges within a memory map
+- **Registers** - Individual registers within an address block
+- **Fields** - Bit fields within a register
+- **Enumerated Values** - Named constants for field values
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET/POST | `/api/projects` | List/Create projects |
+| GET/PUT/DELETE | `/api/projects/:id` | Get/Update/Delete project |
+| GET/POST | `/api/addressBlocks` | List/Create address blocks |
+| GET/POST/PUT/DELETE | `/api/registers` | CRUD operations for registers |
+| POST | `/api/export/:projectId` | Export project in specified format |
+| GET | `/api/export/formats` | List available export formats |
+
+## Roadmap
+
+### Highest Priority
+
+- [ ] **TGI API Compliance** - Implement IEEE 1685-2022 IP-XACT TGI (Tool Generator Interface) compatible API layer at `/tgi/*` for external EDA tool integration. See [API Compliance Analysis](docs/api_compliance_analysis.md) for details.
+
+### High Priority
+
+- [ ] **Multi-user Authentication** - Complete Better Auth integration with login/register/logout
+- [ ] **Project Version Control** - Git-like versioning for register designs with history tracking
+- [ ] **Import from Excel** - Plugin-based import from spreadsheet formats
+
+### Medium Priority
+
+- [ ] **Export to Excel** - Plugin-based export to spreadsheet formats
+- [ ] **IP-XACT Import** - Import existing IP-XACT XML files
+- [ ] **Register Templates** - Predefined register templates for common peripherals
+- [ ] **Diff/Compare** - Compare register maps between versions or projects
+
+### Future Enhancements
+
+- [ ] **Collaboration** - Real-time collaborative editing
+- [ ] **Access Control** - Role-based permissions for teams
+- [ ] **Register Validation** - Address overlap detection and constraint checking
+- [ ] **Documentation Generation** - Extended document formats (PDF, Markdown)
+- [ ] **CI/CD Integration** - API for automated register file generation
+
+## License
 
 MIT
