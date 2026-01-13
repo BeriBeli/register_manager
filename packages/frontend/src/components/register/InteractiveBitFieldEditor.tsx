@@ -138,6 +138,10 @@ export function InteractiveBitFieldEditor({
     }
   };
 
+  // Calculate if register is full
+  const occupiedBits = bitToField.size;
+  const isFull = occupiedBits >= registerSize;
+
   // Generate rows (high bits first)
   const rowElements = [];
   for (let row = rows - 1; row >= 0; row--) {
@@ -150,8 +154,8 @@ export function InteractiveBitFieldEditor({
 
     for (let bit = endBit - 1; bit >= startBit; bit--) {
       const field = bitToField.get(bit);
-      const isFieldStart = field && field.bitOffset === bit;
-      const isFieldEnd = field && field.bitOffset + field.bitWidth - 1 === bit;
+      const isFieldStart = field && field.bitOffset === bit; // LSB (Right side)
+      const isFieldEnd = field && field.bitOffset + field.bitWidth - 1 === bit; // MSB (Left side)
       const isHovered = field && hoveredField === field.id;
       const isSelected = field && selectedField === field.id;
       const isInSelection = !field && isBitInSelection(bit);
@@ -168,14 +172,24 @@ export function InteractiveBitFieldEditor({
         renderedFields.add(field.id);
       }
 
+      // Show label/controls on the MSB (visually top-left-most part of the field)
+      // If the field is split, this ensures controls only appear once.
+      // Also check if isFirstInRow to handle case where MSB is not in this row (very rare for logic but safest is isFieldEnd)
+      // Actually strictly isFieldEnd is best for "single control".
+      const showControls = isFieldEnd;
+      const showLabel = isFieldEnd;
+
       cells.push(
         <div
           key={bit}
           className={clsx(
             "h-12 flex items-center justify-center text-2xs font-mono cursor-pointer transition-all border-y border-r relative group select-none",
             colorClass,
-            isFieldStart && "rounded-l border-l",
-            isFieldEnd && "rounded-r",
+            // MSB (Left side) gets left border and rounded left
+            isFieldEnd && "rounded-l border-l",
+            // LSB (Right side) gets rounded right
+            isFieldStart && "rounded-r",
+            // Empty bits get left border
             !field && "border-l",
             isHovered && "ring-2 ring-primary-400 z-10",
             isSelected && "ring-2 ring-primary-500 z-10",
@@ -203,8 +217,8 @@ export function InteractiveBitFieldEditor({
             {bit}
           </span>
 
-          {/* Field name (only on first bit of field in row) */}
-          {field && isFirstInRow && field.bitWidth > 0 && (
+          {/* Field name (only on MSB of field) */}
+          {field && showLabel && field.bitWidth > 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-1">
               <span className="text-xs font-medium text-surface-100 truncate max-w-full bg-surface-900/50 px-1 rounded backdrop-blur-[1px]">
                 {field.name}
@@ -213,8 +227,11 @@ export function InteractiveBitFieldEditor({
           )}
 
           {/* Hover actions */}
-          {field && isHovered && isFirstInRow && (
-            <div className="absolute -top-8 left-0 bg-surface-800 border border-surface-600 rounded px-2 py-1 flex items-center gap-1 z-20 shadow-lg">
+          {field && isHovered && showControls && (
+            <div className="absolute -top-8 left-0 bg-surface-800 border border-surface-600 rounded px-2 py-1 flex items-center gap-1 z-20 shadow-lg"
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+            >
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -262,10 +279,16 @@ export function InteractiveBitFieldEditor({
       {onAddField && (
         <button
           onClick={onAddField}
-          className="w-full py-3 border-2 border-dashed border-surface-700 hover:border-primary-500 rounded-lg flex items-center justify-center gap-2 text-surface-400 hover:text-primary-400 transition-colors"
+          disabled={isFull}
+          className={clsx(
+            "w-full py-3 border-2 border-dashed rounded-lg flex items-center justify-center gap-2 transition-colors",
+            isFull
+              ? "border-surface-700 text-surface-600 cursor-not-allowed opacity-50"
+              : "border-surface-700 hover:border-primary-500 text-surface-400 hover:text-primary-400"
+          )}
         >
           <Plus className="w-4 h-4" />
-          Add Field
+          {isFull ? "Register Full" : "Add Field"}
         </button>
       )}
 

@@ -73,9 +73,6 @@ export function Projects() {
             ) : (
               <div className="divide-y divide-surface-800">
                 {projects.map((project) => {
-                  const registerCount = project.memoryMaps?.reduce((sum, mm) => {
-                    return sum + (mm.addressBlocks?.reduce((s, ab) => s + (ab.registers?.length || 0), 0) || 0);
-                  }, 0) || 0;
 
                   return (
                     <Link
@@ -99,9 +96,6 @@ export function Projects() {
 
                       <div className="flex items-center gap-6">
                         <div className="text-right">
-                          <div className="text-sm text-surface-300">
-                            {registerCount} registers
-                          </div>
                           <div className="flex items-center gap-1 text-xs text-surface-500">
                             <Clock className="w-3 h-3" />
                             {new Date(project.updatedAt).toLocaleDateString()}
