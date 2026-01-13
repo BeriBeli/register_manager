@@ -4,16 +4,79 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Primary Color Palette (Indigo) - Default Dark Mode */
+    --color-primary-50: 238 242 255;
+    --color-primary-100: 224 231 255;
+    --color-primary-200: 199 210 254;
+    --color-primary-300: 165 180 252;
+    --color-primary-400: 129 140 248;
+    --color-primary-500: 99 102 241;
+    --color-primary-600: 79 70 229;
+    --color-primary-700: 67 56 202;
+    --color-primary-800: 55 48 163;
+    --color-primary-900: 49 46 129;
+    --color-primary-950: 30 27 75;
+
+    /* Surface Color Palette (Slate) - Default Dark Mode */
+    /* In Dark Mode: 950 is background (darkest), 50 is text (brightest) */
+    --color-surface-50: 248 250 252;
+    --color-surface-100: 241 245 249;
+    --color-surface-200: 226 232 240;
+    --color-surface-300: 203 213 225;
+    --color-surface-400: 148 163 184;
+    --color-surface-500: 100 116 139;
+    --color-surface-600: 71 85 105;
+    --color-surface-700: 51 65 85;
+    --color-surface-800: 30 41 59;
+    --color-surface-900: 15 23 42;
+    --color-surface-950: 2 6 23;
   }
+
+  /* Light Theme Overrides */
+  .dark {
+    /* Already default, but explicit for clarity if needed, or rely on :root */
+  }
+
+  .light {
+    /* In Light Mode: We INVERT the Surface Scale so standard classes map correctly */
+    /* bg-surface-950 should be WHITE (background) */
+    /* text-surface-50 should be BLACK (text) */
+
+    /* Re-map Surface colors for Light Mode */
+    --color-surface-950: 255 255 255;
+    /* White for Main BG */
+    --color-surface-900: 248 250 252;
+    /* Slate-50 for Cards */
+    --color-surface-800: 241 245 249;
+    /* Slate-100 for Hover/Secondary */
+    --color-surface-700: 226 232 240;
+    /* Slate-200 for Borders */
+    --color-surface-600: 203 213 225;
+    /* Slate-300 */
+    --color-surface-500: 148 163 184;
+    /* Slate-400 */
+    --color-surface-400: 100 116 139;
+    /* Slate-500 (Text Muted) */
+    --color-surface-300: 71 85 105;
+    /* Slate-600 */
+    --color-surface-200: 51 65 85;
+    /* Slate-700 (Text Normal) */
+    --color-surface-100: 30 41 59;
+    /* Slate-800 (Text Strong) */
+    --color-surface-50: 15 23 42;
+    /* Slate-900 (Text Emphasis) */
+
+    /* Keep Primary color mostly same, maybe adjust slightly for contrast? */
+    /* For now keep Primary static as brand color */
+  }
+
 
   * {
     @apply border-surface-700;
   }
 
   body {
-    @apply bg-surface-950 text-surface-100;
+    @apply bg-surface-950 text-surface-100 transition-colors duration-300;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
@@ -37,6 +100,7 @@
 }
 
 @layer components {
+
   /* Industrial button styles */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface-950 disabled:pointer-events-none disabled:opacity-50;
@@ -117,6 +181,7 @@
       opacity: 0;
       transform: translateY(-4px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);

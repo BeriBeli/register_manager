@@ -8,6 +8,7 @@ import type {
   CreateProjectInput,
   CreateMemoryMapInput,
   CreateAddressBlockInput,
+  UpdateAddressBlockInput,
   CreateRegisterInput,
   CreateFieldInput,
   UpdateRegisterInput,
@@ -34,6 +35,8 @@ interface RegisterStore {
   setSelectedAddressBlockId: (id: string | null) => void;
   setSelectedMemoryMapId: (id: string | null) => void;
   createAddressBlock: (memoryMapId: string, data: CreateAddressBlockInput) => Promise<string | undefined>;
+  updateAddressBlock: (id: string, data: UpdateAddressBlockInput) => Promise<void>;
+  deleteAddressBlock: (id: string) => Promise<void>;
 
   // Register actions
   createRegister: (addressBlockId: string, data: CreateRegisterInput) => Promise<string | undefined>;
@@ -196,6 +199,57 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
       await get().fetchProject(currentProject.id);
       set({ isLoading: false });
       return newAddressBlock?.id;
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  updateAddressBlock: async (id: string, data: UpdateAddressBlockInput) => {
+    set({ isLoading: true, error: null });
+    const { currentProject } = get();
+    if (!currentProject) return;
+
+    try {
+      const response = await fetch(`/api/address-blocks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update address block");
+      }
+
+      await get().fetchProject(currentProject.id);
+      set({ isLoading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteAddressBlock: async (id: string) => {
+    set({ isLoading: true, error: null });
+    const { currentProject } = get();
+    if (!currentProject) return;
+
+    try {
+      const response = await fetch(`/api/address-blocks/${id}`, {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete address block");
+      }
+
+      await get().fetchProject(currentProject.id);
+      if (get().selectedAddressBlockId === id) {
+        get().setSelectedAddressBlockId(null);
+      }
+      set({ isLoading: false });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
       throw error;

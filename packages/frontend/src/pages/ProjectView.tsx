@@ -9,9 +9,10 @@ import { AddressBlockTable } from "../components/address/AddressBlockTable";
 import { PropertyPanel } from "../components/property/PropertyPanel";
 import { ExportDialog } from "../components/export/ExportDialog";
 import { CreateAddressBlockDialog } from "../components/project/CreateAddressBlockDialog";
+import { AddressBlockDialog } from "../components/project/AddressBlockDialog";
 import { useRegisterStore } from "../stores/registerStore";
 import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight } from "lucide-react";
-import type { Field, Register } from "@register-manager/shared";
+import type { Field, Register, AddressBlock } from "@register-manager/shared";
 import { parseNumber } from "@register-manager/shared";
 
 export function ProjectView() {
@@ -20,6 +21,7 @@ export function ProjectView() {
   const isLoading = useRegisterStore((state) => state.isLoading);
   const fetchProject = useRegisterStore((state) => state.fetchProject);
   const deleteRegister = useRegisterStore((state) => state.deleteRegister);
+  const deleteAddressBlock = useRegisterStore((state) => state.deleteAddressBlock);
   const selectedRegister = useRegisterStore((state) => state.selectedRegister);
   const setSelectedRegister = useRegisterStore((state) => state.setSelectedRegister);
   const selectedAddressBlockId = useRegisterStore((state) => state.selectedAddressBlockId);
@@ -52,7 +54,28 @@ export function ProjectView() {
   const [selectedRegisterId, setSelectedRegisterId] = useState<string | null>(null);
   const [showPropertyPanel, setShowPropertyPanel] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [creatingAddressBlockFor, setCreatingAddressBlockFor] = useState<string | null>(null);
+
+  // New state for Address Block Editing
+  const [editingAddressBlock, setEditingAddressBlock] = useState<AddressBlock | null>(null);
+  const [showAddressBlockDialog, setShowAddressBlockDialog] = useState(false);
+  const [targetMemoryMapId, setTargetMemoryMapId] = useState<string | null>(null);
+
+  const handleEditAddressBlock = (block: AddressBlock) => {
+    setEditingAddressBlock(block);
+    setShowAddressBlockDialog(true);
+  };
+
+  const handleDeleteAddressBlock = async (id: string) => {
+    if (confirm("Are you sure you want to delete this address block?")) {
+      await deleteAddressBlock(id);
+    }
+  };
+
+  const handleCreateAddressBlock = (memoryMapId: string) => {
+    setTargetMemoryMapId(memoryMapId);
+    setEditingAddressBlock(null);
+    setShowAddressBlockDialog(true);
+  };
 
   // Determine active address block and registers
   const activeMemoryMap = currentProject?.memoryMaps?.find(mm => mm.id === useRegisterStore.getState().selectedMemoryMapId);
@@ -89,12 +112,7 @@ export function ProjectView() {
   // We can wrap the creation / close.
   // Let's modify the creation flow slightly in the dialog logic below.
 
-  const handleAddressBlockCreated = (newBlockId: string) => {
-    // Called when creation dialog finishes successfully
-    setCreatingAddressBlockFor(null);
-    // Auto-enter
-    setSelectedAddressBlockId(newBlockId);
-  };
+
 
   if (error) return <div className="h-full flex items-center justify-center text-red-500">Error: {error}</div>;
   if (isLoading && !currentProject) return <div className="h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary-400" /></div>;
@@ -278,7 +296,7 @@ export function ProjectView() {
               <p className="text-surface-400 text-sm mt-1">Define memory regions and blocks for {activeMemoryMap.name}</p>
             </div>
             <button
-              onClick={() => setCreatingAddressBlockFor(activeMemoryMap.id)}
+              onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
               className="btn-primary shadow-lg shadow-primary-500/20"
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -292,14 +310,8 @@ export function ProjectView() {
                 <AddressBlockTable
                   addressBlocks={activeMemoryMap.addressBlocks}
                   onSelect={(block) => setSelectedAddressBlockId(block.id)}
-                  onEdit={(block) => {
-                    // TODO: Implement Edit
-                    console.log("Edit block", block);
-                  }}
-                  onDelete={(id) => {
-                    // TODO: Implement Delete
-                    console.log("Delete block", id);
-                  }}
+                  onEdit={handleEditAddressBlock}
+                  onDelete={handleDeleteAddressBlock}
                 />
               </div>
             ) : (
@@ -310,7 +322,7 @@ export function ProjectView() {
                 <h3 className="text-lg font-medium text-surface-200 mb-2">No address blocks</h3>
                 <p className="text-surface-400 mb-6 max-w-sm">Start by creating an address block to organize your registers.</p>
                 <button
-                  onClick={() => setCreatingAddressBlockFor(activeMemoryMap.id)}
+                  onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
                   className="btn-primary"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -474,18 +486,28 @@ export function ProjectView() {
         />
       )}
 
-      {/* Create Address Block Dialog wrapper to handle auto-select */}
-      {creatingAddressBlockFor && (
-        <CreateAddressBlockDialog
-          memoryMapId={creatingAddressBlockFor}
+      {/* Address Block Dialog (Create & Edit) */}
+      {showAddressBlockDialog && (
+        <AddressBlockDialog
+          memoryMapId={targetMemoryMapId || undefined}
+          initialData={editingAddressBlock || undefined}
           onClose={(newId) => {
-            setCreatingAddressBlockFor(null);
+            setShowAddressBlockDialog(false);
+            setEditingAddressBlock(null);
+            setTargetMemoryMapId(null);
             if (newId) {
-              setSelectedAddressBlockId(newId);
+              // If created, auto select? 
+              // Previous logic: setSelectedAddressBlockId(newId);
+              // But this dialog handles both.
+              if (!editingAddressBlock) {
+                setSelectedAddressBlockId(newId);
+              }
             }
           }}
         />
       )}
+
+
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft } from "lucide-react";
+import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft, Sun, Moon, Globe } from "lucide-react";
 import { clsx } from "clsx";
+import { useTranslation } from "react-i18next";
+import { useThemeStore } from "../../stores/themeStore";
 import { ProjectTree } from "./ProjectTree";
 
 const navigation = [
@@ -12,6 +14,8 @@ const navigation = [
 
 export function Sidebar() {
   const location = useLocation();
+  const { t, i18n } = useTranslation();
+  const { theme, setTheme } = useThemeStore();
   const isProjectView = location.pathname.startsWith("/project/");
 
   return (
@@ -35,7 +39,7 @@ export function Sidebar() {
               className="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-200 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
-              Back to Dashboard
+              {t('sidebar.back_to_dashboard')}
             </Link>
           </div>
 
@@ -58,7 +62,7 @@ export function Sidebar() {
                 )}
               >
                 <item.icon className="w-4 h-4" />
-                {item.name}
+                {t(`sidebar.${item.name.toLowerCase()}`)}
               </Link>
             );
           })}
@@ -66,7 +70,50 @@ export function Sidebar() {
       )}
 
       {/* Footer */}
-      <div className="p-3 border-t border-surface-800 shrink-0">
+      <div className="p-3 border-t border-surface-800 shrink-0 space-y-3">
+        {/* Utilities: Theme & Language */}
+        <div className="flex items-center justify-between px-2">
+          {/* Language Toggle */}
+          <div className="flex items-center gap-1 bg-surface-800 rounded-md p-0.5 border border-surface-700">
+            <button
+              onClick={() => i18n.changeLanguage('en')}
+              className={clsx(
+                "px-2 py-0.5 text-xs font-medium rounded transition-colors",
+                i18n.language.startsWith('en')
+                  ? "bg-primary-600 text-white"
+                  : "text-surface-400 hover:text-surface-200"
+              )}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('zh')}
+              className={clsx(
+                "px-2 py-0.5 text-xs font-medium rounded transition-colors",
+                i18n.language.startsWith('zh')
+                  ? "bg-primary-600 text-white"
+                  : "text-surface-400 hover:text-surface-200"
+              )}
+            >
+              中文
+            </button>
+          </div>
+
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="p-1.5 text-surface-400 hover:text-primary-400 hover:bg-surface-800 rounded-md transition-colors"
+            title={theme === 'dark' ? t('sidebar.theme.light') : t('sidebar.theme.dark')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        {/* App Info */}
         <div className="flex items-center gap-3 px-2 py-1 rounded bg-surface-800/50 border border-surface-800/50">
           <div className="w-8 h-8 rounded bg-primary-900/50 text-primary-400 flex items-center justify-center border border-primary-500/20">
             <span className="font-bold text-xs">RM</span>
@@ -75,7 +122,6 @@ export function Sidebar() {
             <span className="text-xs font-medium text-surface-200 truncate">Register Manager</span>
             <span className="text-[10px] text-surface-500 truncate">v1.0.0</span>
           </div>
-          {/* Simple user/settings placeholder since user asked for red area actions to be moved/consolidated */}
         </div>
       </div>
     </aside>

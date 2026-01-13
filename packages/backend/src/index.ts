@@ -7,6 +7,7 @@ import { projectRoutes } from "./routes/projects";
 import { registerRoutes } from "./routes/registers";
 import { exportRoutes } from "./routes/export";
 import { authRoutes } from "./routes/auth";
+import { addressBlockRoutes } from "./routes/addressBlocks";
 
 // Create Hono app
 const app = new Hono();
@@ -36,6 +37,7 @@ app.route("/api/auth", authRoutes);
 app.route("/api/projects", projectRoutes);
 app.route("/api/registers", registerRoutes);
 app.route("/api/export", exportRoutes);
+app.route("/api/address-blocks", addressBlockRoutes);
 
 // 404 handler
 app.notFound((c) => {

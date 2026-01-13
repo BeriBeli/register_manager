@@ -43,15 +43,7 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowProjectDialog(true)}
-            className="btn-primary shadow-lg shadow-primary-500/20"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </button>
-        </div>
+
       </div>
 
       <div className="flex-1 overflow-auto p-8">
@@ -78,8 +70,15 @@ export function Dashboard() {
 
           {/* Projects List */}
           <div className="card">
-            <div className="p-4 border-b border-surface-700">
+            <div className="p-4 border-b border-surface-700 flex items-center justify-between">
               <h2 className="font-medium text-surface-200">Recent Projects</h2>
+              <button
+                onClick={() => setShowProjectDialog(true)}
+                className="btn-primary shadow-lg shadow-primary-500/20"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </button>
             </div>
             {isLoading ? (
               <div className="p-12 text-center text-surface-400">Loading...</div>

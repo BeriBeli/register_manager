@@ -1,0 +1,23 @@
+{
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "export": "Export",
+        "docs": "Docs",
+        "back_to_dashboard": "Back to Dashboard",
+        "theme": {
+            "light": "Light Mode",
+            "dark": "Dark Mode",
+            "system": "System"
+        },
+        "language": "Language",
+        "version": "Version"
+    },
+    "common": {
+        "loading": "Loading...",
+        "error": "Error",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "confirm": "Confirm"
+    }
+}
