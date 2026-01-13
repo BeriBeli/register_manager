@@ -7,6 +7,7 @@ import { projectRoutes } from "./routes/projects";
 import { registerRoutes } from "./routes/registers";
 import { exportRoutes } from "./routes/export";
 import { addressBlockRoutes } from "./routes/addressBlocks";
+import { versionRoutes } from "./routes/versions";
 import { auth } from "./lib/auth";
 
 // Define app type with session variables
@@ -103,6 +104,7 @@ app.route("/api/projects", projectRoutes);
 app.route("/api/registers", registerRoutes);
 app.route("/api/export", exportRoutes);
 app.route("/api/address-blocks", addressBlockRoutes);
+app.route("/api/projects/versions", versionRoutes);
 
 // Custom Admin Routes (Admin Plugin handles list, delete, etc.)
 // We only keep custom logic like 'approve' that isn't standard in the plugin

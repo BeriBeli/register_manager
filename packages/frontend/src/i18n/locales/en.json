@@ -2,6 +2,8 @@
     "sidebar": {
         "projects": "Projects",
         "back_to_projects": "Back to Projects",
+        "editor": "Editor",
+        "history": "History",
         "theme": {
             "light": "Light Mode",
             "dark": "Dark Mode",
@@ -157,5 +159,38 @@
                 "success": "Password reset successfully!"
             }
         }
+    },
+    "versions": {
+        "title": "Version History",
+        "create": "Create Version",
+        "restore": "Restore",
+        "name": "Version Name",
+        "description": "Description",
+        "created_at": "Created At",
+        "created_by": "Created By",
+        "actions": "Actions",
+        "create_modal": {
+            "title": "Create New Version",
+            "name_placeholder": "e.g. v1.0.0",
+            "desc_placeholder": "Brief description of changes",
+            "submit": "Create Snapshot",
+            "creating": "Creating...",
+            "cancel": "Cancel"
+        },
+        "restore_modal": {
+            "title": "Restore Version",
+            "warning": "Are you sure you want to restore this version? Current project state will be replaced.",
+            "confirm": "Yes, Restore",
+            "restoring": "Restoring...",
+            "cancel": "Cancel"
+        },
+        "success_create": "Version created successfully",
+        "success_restore": "Version restored successfully",
+        "error_create": "Failed to create version",
+        "error_restore": "Failed to restore version",
+        "empty_state": "No versions created yet.",
+        "unknown_user": "Unknown User",
+        "loading": "Loading versions...",
+        "error_load": "Error loading versions"
     }
 }

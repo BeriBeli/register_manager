@@ -102,6 +102,16 @@ export const projects = pgTable("projects", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const projectVersions = pgTable("project_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  version: text("version").notNull(),
+  description: text("description"),
+  data: jsonb("data").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: text("created_by").references(() => user.id),
+});
+
 // ============================================================================
 // Memory Maps
 // ============================================================================
@@ -254,6 +264,18 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
     references: [user.id],
   }),
   memoryMaps: many(memoryMaps),
+  versions: many(projectVersions),
+}));
+
+export const projectVersionsRelations = relations(projectVersions, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectVersions.projectId],
+    references: [projects.id],
+  }),
+  resultCreator: one(user, {
+    fields: [projectVersions.createdBy],
+    references: [user.id],
+  }),
 }));
 
 export const memoryMapsRelations = relations(memoryMaps, ({ one, many }) => ({

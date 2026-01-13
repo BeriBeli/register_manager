@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft, Sun, Moon, Globe, LogOut, User, Settings, Shield } from "lucide-react";
+import { LayoutDashboard, FolderOpen, Cpu, FileCode, BookOpen, ChevronLeft, Sun, Moon, Globe, LogOut, User, Settings, Shield, History } from "lucide-react";
 import { clsx } from "clsx";
 import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../stores/themeStore";
@@ -19,6 +19,9 @@ export function Sidebar() {
   const { data: session } = useSession();
   const isProjectView = location.pathname.startsWith("/project/");
   const [showSettings, setShowSettings] = useState(false);
+
+  // Extract projectId if in project view
+  const projectId = isProjectView ? location.pathname.split("/")[2] : null;
 
   const handleLogout = async () => {
     await signOut();
@@ -41,7 +44,7 @@ export function Sidebar() {
         {isProjectView ? (
           // Project Context Sidebar
           <div className="flex flex-col flex-1 overflow-hidden">
-            <div className="p-3 border-b border-surface-800">
+            <div className="p-3 border-b border-surface-800 space-y-3">
               <Link
                 to="/"
                 className="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-200 transition-colors"
@@ -49,6 +52,35 @@ export function Sidebar() {
                 <ChevronLeft className="w-4 h-4" />
                 {t('sidebar.back_to_projects')}
               </Link>
+
+              {projectId && (
+                <div className="flex gap-1 bg-surface-800/50 p-1 rounded-lg">
+                  <Link
+                    to={`/project/${projectId}`}
+                    className={clsx(
+                      "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-colors",
+                      location.pathname === `/project/${projectId}`
+                        ? "bg-surface-700 text-surface-100 shadow-sm"
+                        : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
+                    )}
+                  >
+                    <FileCode className="w-3.5 h-3.5" />
+                    {t('sidebar.editor')}
+                  </Link>
+                  <Link
+                    to={`/project/${projectId}/versions`}
+                    className={clsx(
+                      "flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-md transition-colors",
+                      location.pathname.includes("/versions")
+                        ? "bg-surface-700 text-surface-100 shadow-sm"
+                        : "text-surface-400 hover:text-surface-200 hover:bg-surface-800"
+                    )}
+                  >
+                    <History className="w-3.5 h-3.5" />
+                    {t('sidebar.history')}
+                  </Link>
+                </div>
+              )}
             </div>
 
             <ProjectTree />

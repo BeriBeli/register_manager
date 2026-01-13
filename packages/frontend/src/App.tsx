@@ -3,6 +3,7 @@ import { Layout } from "./components/layout/Layout";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
 import { Projects } from "./pages/Projects";
 import { ProjectView } from "./pages/ProjectView";
+import { ProjectVersions } from "./pages/ProjectVersions";
 import { AuthPage } from "./pages/AuthPage";
 import { Clock } from "lucide-react";
 import { useSession, signOut } from "./lib/auth-client";
@@ -137,6 +138,7 @@ function App() {
         />
         <Route path="users" element={<Navigate to="admin" replace />} />
         <Route path="project/:id" element={<ProjectView />} />
+        <Route path="project/:id/versions" element={<ProjectVersions />} />
       </Route>
     </Routes>
   );

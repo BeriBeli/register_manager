@@ -1,7 +1,9 @@
 {
     "sidebar": {
         "projects": "所有项目",
-        "back_to_projects": "返回所有项目",
+        "back_to_projects": "返回项目列表",
+        "editor": "编辑器",
+        "history": "历史版本",
         "theme": {
             "light": "浅色模式",
             "dark": "深色模式",
@@ -157,5 +159,38 @@
                 "success": "密码重置成功！"
             }
         }
+    },
+    "versions": {
+        "title": "版本历史",
+        "create": "创建版本",
+        "restore": "恢复",
+        "name": "版本名称",
+        "description": "描述",
+        "created_at": "创建时间",
+        "created_by": "创建人",
+        "actions": "操作",
+        "create_modal": {
+            "title": "创建新版本",
+            "name_placeholder": "例如 v1.0.0",
+            "desc_placeholder": "简单的变更描述",
+            "submit": "创建快照",
+            "creating": "创建中...",
+            "cancel": "取消"
+        },
+        "restore_modal": {
+            "title": "恢复版本",
+            "warning": "确定要恢复到此版本吗？当前项目状态将被覆盖。",
+            "confirm": "是的，恢复",
+            "restoring": "恢复中...",
+            "cancel": "取消"
+        },
+        "success_create": "版本创建成功",
+        "success_restore": "版本恢复成功",
+        "error_create": "创建版本失败",
+        "error_restore": "恢复版本失败",
+        "empty_state": "暂无历史版本",
+        "unknown_user": "未知用户",
+        "loading": "加载版本中...",
+        "error_load": "加载版本失败"
     }
 }
