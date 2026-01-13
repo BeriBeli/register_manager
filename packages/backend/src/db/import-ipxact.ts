@@ -1,5 +1,5 @@
 import { parseStringPromise } from "xml2js";
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { db } from "./index";
 import { projects, memoryMaps, addressBlocks, registers, fields, resets, users } from "./schema";
 
@@ -240,7 +240,7 @@ async function importIpxactXml(xmlFilePath: string) {
 }
 
 // Main execution
-import { resolve, dirname } from "path";
+import { resolve, dirname, isAbsolute } from "path";
 import { fileURLToPath } from "url";
 
 // Get the directory of the current file
@@ -248,7 +248,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Default to example.xml in project root (4 levels up from src/db)
-const xmlFilePath = process.argv[2] || resolve(__dirname, "../../../../example.xml");
+// Resolve the path
+let xmlFilePath = process.argv[2];
+const projectRoot = resolve(__dirname, "../../../../");
+
+if (!xmlFilePath) {
+  xmlFilePath = resolve(projectRoot, "example.xml");
+} else {
+  // If the path is relative and doesn't exist relative to CWD, try relative to project root
+  if (!isAbsolute(xmlFilePath) && !existsSync(xmlFilePath)) {
+    const potentialPath = resolve(projectRoot, xmlFilePath);
+    if (existsSync(potentialPath)) {
+      xmlFilePath = potentialPath;
+    } else {
+      // Fallback to resolve from CWD if it still doesn't exist, will fail later with better error
+      xmlFilePath = resolve(process.cwd(), xmlFilePath);
+    }
+  } else {
+    xmlFilePath = resolve(process.cwd(), xmlFilePath);
+  }
+}
+
 
 importIpxactXml(xmlFilePath)
   .then((project) => {
