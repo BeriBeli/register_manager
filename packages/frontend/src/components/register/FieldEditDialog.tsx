@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../../stores/registerStore";
 import type { Field, UpdateFieldInput } from "@register-manager/shared";
 import { getFieldAccess } from "@register-manager/shared";
@@ -11,6 +12,7 @@ interface FieldEditDialogProps {
 }
 
 export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialogProps) {
+  const { t } = useTranslation();
   const updateField = useRegisterStore((state) => state.updateField);
   const isLoading = useRegisterStore((state) => state.isLoading);
 
@@ -31,24 +33,24 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
     const newErrors: Record<string, string> = {};
 
     if (formData.name && !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(formData.name)) {
-      newErrors.name = "Name must be a valid identifier";
+      newErrors.name = t("project.create_field.errors.name_invalid");
     }
 
     if (formData.bitOffset !== undefined) {
       if (formData.bitOffset < 0 || formData.bitOffset >= registerSize) {
-        newErrors.bitOffset = `Bit offset must be between 0 and ${registerSize - 1}`;
+        newErrors.bitOffset = t("project.create_field.errors.offset_range", { max: registerSize - 1 });
       }
     }
 
     if (formData.bitWidth !== undefined) {
       if (formData.bitWidth <= 0 || formData.bitWidth > registerSize) {
-        newErrors.bitWidth = `Bit width must be between 1 and ${registerSize}`;
+        newErrors.bitWidth = t("project.create_field.errors.width_range", { max: registerSize });
       }
 
       const offset = formData.bitOffset ?? field.bitOffset;
       const width = formData.bitWidth;
       if (offset + width > registerSize) {
-        newErrors.bitWidth = `Field exceeds register size (${registerSize} bits)`;
+        newErrors.bitWidth = t("project.create_field.errors.exceeds_size", { size: registerSize });
       }
     }
 
@@ -77,7 +79,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
       <div className="bg-surface-900 border border-surface-700 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-surface-700">
-          <h2 className="text-lg font-semibold text-surface-100">Edit Field: {field.name}</h2>
+          <h2 className="text-lg font-semibold text-surface-100">{t("project.create_field.title_edit")}: {field.name}</h2>
           <button onClick={onClose} className="btn-ghost p-2" disabled={isLoading}>
             <X className="w-4 h-4" />
           </button>
@@ -87,13 +89,13 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-surface-300 mb-1">Name</label>
+            <label className="block text-sm font-medium text-surface-300 mb-1">{t("common.name")}</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="input"
-              placeholder="e.g., ENABLE, MODE, STATUS"
+              placeholder={t("project.create_field.name_placeholder")}
               disabled={isLoading}
             />
             {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
@@ -102,14 +104,14 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
           {/* Display Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Display Name
+              {t("common.display_name")}
             </label>
             <input
               type="text"
               value={formData.displayName || ""}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               className="input"
-              placeholder="e.g., Enable Bit"
+              placeholder={t("project.create_field.display_name_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -117,13 +119,13 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Description
+              {t("common.description")}
             </label>
             <textarea
               value={formData.description || ""}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="input min-h-[60px]"
-              placeholder="Describe the purpose of this field..."
+              placeholder={t("project.create_field.desc_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -132,7 +134,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Bit Offset
+                {t("common.bit_offset")}
               </label>
               <input
                 type="number"
@@ -152,7 +154,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
 
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Bit Width
+                {t("common.bit_width")}
               </label>
               <input
                 type="number"
@@ -173,7 +175,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
 
           {/* Bit Range Preview */}
           <div className="p-3 bg-surface-800 rounded border border-surface-700">
-            <div className="text-xs text-surface-400 mb-1">Bit Range</div>
+            <div className="text-xs text-surface-400 mb-1">{t("project.create_field.bit_range")}</div>
             <div className="font-mono text-primary-400">
               [{currentOffset + currentWidth - 1}:{currentOffset}]
             </div>
@@ -183,7 +185,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Access Type
+                {t("common.access")}
               </label>
               <select
                 value={formData.access || "read-write"}
@@ -209,7 +211,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
                 disabled={isLoading}
               />
               <label htmlFor="edit-field-volatile" className="ml-2 text-sm text-surface-300">
-                Volatile
+                {t("common.volatile")}
               </label>
             </div>
           </div>
@@ -217,27 +219,27 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
           {/* Reset Value */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Reset Value (Hex)
+              {t("common.reset_value")} ({t("common.hex_format")})
             </label>
             <input
               type="text"
               value={formData.resetValue || ""}
               onChange={(e) => setFormData({ ...formData, resetValue: e.target.value })}
               className="input font-mono"
-              placeholder="e.g. 0x0"
+              placeholder={t("project.create_field.reset_placeholder")}
               disabled={isLoading}
             />
-            <p className="text-xs text-surface-500 mt-1">Optional. Default is unknown/undefined.</p>
+            <p className="text-xs text-surface-500 mt-1">{t("common.optional")}. {t("common.default_unknown")}.</p>
           </div>
         </form>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 p-4 border-t border-surface-700">
           <button type="button" onClick={onClose} className="btn-secondary" disabled={isLoading}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button onClick={handleSubmit} className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Changes"}
+            {isLoading ? t("project.create_field.saving") : t("project.create_field.submit_save")}
           </button>
         </div>
       </div>

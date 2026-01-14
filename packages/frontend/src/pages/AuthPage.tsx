@@ -39,7 +39,7 @@ export function AuthPage() {
       } else {
         // Validation for Sign Up
         if (password !== confirmPassword) {
-          setError("Passwords do not match");
+          setError(t("auth.passwordMismatch"));
           setLoading(false);
           return;
         }
@@ -137,14 +137,14 @@ export function AuthPage() {
 
           {!isLogin && (
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t("auth.confirmPassword") || "Confirm Password"}</label>
               <div className="relative">
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your password"
+                  placeholder={t("auth.confirmPasswordPlaceholder")}
                   required
                   minLength={8}
                   autoComplete="new-password"

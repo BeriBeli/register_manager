@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Check, Shield, User, Clock, AlertCircle, Trash2, Lock, X, Key } from "lucide-react";
 import { clsx } from "clsx";
 import { useSession, authClient } from "../lib/auth-client";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 
 interface User {
   id: string;
@@ -27,6 +28,10 @@ export function AdminUsersPage() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetError, setResetError] = useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = useState(false);
+
+  // Delete State
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -67,23 +72,29 @@ export function AdminUsersPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(t("admin.users.messages.confirmDelete"))) {
-      return;
-    }
+  const handleDeleteClick = (user: User) => {
+    setDeleteUser(user);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteUser) return;
+    setDeleteLoading(true);
 
     try {
       const { error } = await authClient.admin.removeUser({
-        userId: id
+        userId: deleteUser.id
       });
 
       if (!error) {
-        setUsers(users.filter(u => u.id !== id));
+        setUsers(users.filter(u => u.id !== deleteUser.id));
+        setDeleteUser(null);
       } else {
         alert(error.message || t("admin.users.messages.deleteFailed"));
       }
     } catch (err) {
       console.error(t("admin.users.messages.deleteFailed"));
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -132,6 +143,83 @@ export function AdminUsersPage() {
 
   return (
     <div className="p-8 max-w-6xl mx-auto relative">
+      <ConfirmDialog
+        isOpen={!!deleteUser}
+        onClose={() => setDeleteUser(null)}
+        onConfirm={handleConfirmDelete}
+        title={t("admin.users.actions.delete")}
+        description={t("admin.users.messages.confirmDelete")}
+        confirmText={t("admin.users.actions.delete")}
+        isLoading={deleteLoading}
+        variant="danger"
+      />
+
+      {/* Existing Reset Modal (unchanged) */}
+      {resetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-surface-900 border border-surface-800 rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
+            <button
+              onClick={() => setResetUser(null)}
+              className="absolute top-4 right-4 text-surface-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <h3 className="text-lg font-semibold text-surface-100 mb-4 flex items-center gap-2">
+              <Key className="w-5 h-5 text-primary-400" />
+              {t("admin.users.resetModal.title")}
+            </h3>
+
+            <p className="text-sm text-surface-400 mb-4">
+              {t("admin.users.resetModal.description", { name: resetUser.name })}
+            </p>
+
+            <form onSubmit={handleResetSubmit}>
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={t("admin.users.resetModal.placeholder")}
+                  className="w-full bg-surface-800 border-surface-700 rounded-md px-3 py-2 text-sm text-surface-100 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                  minLength={8}
+                  required
+                />
+              </div>
+
+              {resetError && (
+                <div className="text-xs text-red-400 bg-red-900/10 p-2 rounded mb-4">
+                  {resetError}
+                </div>
+              )}
+
+              {resetSuccess ? (
+                <div className="text-xs text-green-400 bg-green-900/10 p-2 rounded mb-4">
+                  {t("admin.users.resetModal.success")}
+                </div>
+              ) : (
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setResetUser(null)}
+                    className="px-3 py-1.5 text-sm text-surface-400 hover:text-white"
+                  >
+                    {t("admin.users.actions.cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium disabled:opacity-50"
+                  >
+                    {resetLoading ? t("admin.users.actions.resetting") : t("admin.users.actions.reset")}
+                  </button>
+                </div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-surface-50 mb-2">{t("admin.users.title")}</h1>
         <p className="text-surface-400">{t("admin.users.subtitle")}</p>
@@ -209,7 +297,6 @@ export function AdminUsersPage() {
                       </button>
                     )}
 
-                    {/* Only allow actions on other users */}
                     {session?.user?.id !== user.id && (
                       <>
                         <button
@@ -220,7 +307,7 @@ export function AdminUsersPage() {
                           <Lock className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => handleDeleteClick(user)}
                           className="p-1.5 text-surface-400 hover:text-red-400 hover:bg-red-900/20 rounded-md transition-colors"
                           title={t("admin.users.actions.delete")}
                         >
@@ -242,72 +329,6 @@ export function AdminUsersPage() {
           </tbody>
         </table>
       </div>
-
-      {/* Password Reset Modal */}
-      {resetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-900 border border-surface-800 rounded-xl shadow-2xl p-6 w-full max-w-sm relative">
-            <button
-              onClick={() => setResetUser(null)}
-              className="absolute top-4 right-4 text-surface-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <h3 className="text-lg font-semibold text-surface-100 mb-4 flex items-center gap-2">
-              <Key className="w-5 h-5 text-primary-400" />
-              {t("admin.users.resetModal.title")}
-            </h3>
-
-            <p className="text-sm text-surface-400 mb-4">
-              {t("admin.users.resetModal.description", { name: resetUser.name })}
-            </p>
-
-            <form onSubmit={handleResetSubmit}>
-              <div className="mb-4">
-                <input
-                  type="text"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={t("admin.users.resetModal.placeholder")}
-                  className="w-full bg-surface-800 border-surface-700 rounded-md px-3 py-2 text-sm text-surface-100 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
-                  minLength={8}
-                  required
-                />
-              </div>
-
-              {resetError && (
-                <div className="text-xs text-red-400 bg-red-900/10 p-2 rounded mb-4">
-                  {resetError}
-                </div>
-              )}
-
-              {resetSuccess ? (
-                <div className="text-xs text-green-400 bg-green-900/10 p-2 rounded mb-4">
-                  {t("admin.users.resetModal.success")}
-                </div>
-              ) : (
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setResetUser(null)}
-                    className="px-3 py-1.5 text-sm text-surface-400 hover:text-white"
-                  >
-                    {t("admin.users.actions.cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={resetLoading}
-                    className="px-3 py-1.5 bg-primary-600 hover:bg-primary-500 text-white text-sm rounded-md disabled:opacity-50"
-                  >
-                    {resetLoading ? t("admin.users.actions.resetting") : t("admin.users.actions.reset")}
-                  </button>
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../../stores/registerStore";
 import type { CreateRegisterInput, Register } from "@register-manager/shared";
 
@@ -10,6 +11,7 @@ interface RegisterDialogProps {
 }
 
 export function RegisterDialog({ addressBlockId, onClose, editingRegister }: RegisterDialogProps) {
+  const { t } = useTranslation();
   const createRegister = useRegisterStore((state) => state.createRegister);
   const updateRegister = useRegisterStore((state) => state.updateRegister);
   const isLoading = useRegisterStore((state) => state.isLoading);
@@ -42,19 +44,19 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("project.create_register.errors.name_required");
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(formData.name)) {
-      newErrors.name = "Name must be a valid identifier";
+      newErrors.name = t("project.create_register.errors.name_invalid");
     }
 
     if (!formData.addressOffset.trim()) {
-      newErrors.addressOffset = "Address offset is required";
+      newErrors.addressOffset = t("project.create_register.errors.offset_required");
     } else if (!/^(0x)?[0-9a-fA-F]+$/.test(formData.addressOffset)) {
-      newErrors.addressOffset = "Invalid hex address";
+      newErrors.addressOffset = t("project.create_register.errors.offset_invalid");
     }
 
     if (formData.size <= 0 || formData.size > 1024) {
-      newErrors.size = "Size must be between 1 and 1024 bits";
+      newErrors.size = t("project.create_register.errors.size_invalid");
     }
 
     setErrors(newErrors);
@@ -85,7 +87,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-surface-700">
           <h2 className="text-lg font-semibold text-surface-100">
-            {editingRegister ? "Edit Register" : "Create New Register"}
+            {editingRegister ? t("project.create_register.title_edit") : t("project.create_register.title_create")}
           </h2>
           <button
             onClick={() => onClose()}
@@ -101,14 +103,14 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Name <span className="text-red-400">*</span>
+              {t("common.name")} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="input"
-              placeholder="e.g., CTRL, STATUS, CONFIG"
+              placeholder={t("project.create_register.name_placeholder")}
               disabled={isLoading}
             />
             {errors.name && (
@@ -119,14 +121,14 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
           {/* Display Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Display Name
+              {t("common.display_name")}
             </label>
             <input
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               className="input"
-              placeholder="e.g., Control Register"
+              placeholder={t("project.create_register.display_name_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -134,13 +136,13 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Description
+              {t("common.description")}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="input min-h-[80px]"
-              placeholder="Describe the purpose of this register..."
+              placeholder={t("project.create_register.desc_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -148,28 +150,28 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
           {/* Address Offset */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Address Offset <span className="text-red-400">*</span>
+              {t("common.address_offset")} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.addressOffset}
               onChange={(e) => setFormData({ ...formData, addressOffset: e.target.value })}
               className="input font-mono"
-              placeholder="0x00"
+              placeholder={t("project.create_register.offset_placeholder")}
               disabled={isLoading}
             />
             {errors.addressOffset && (
               <p className="text-xs text-red-400 mt-1">{errors.addressOffset}</p>
             )}
             <p className="text-xs text-surface-500 mt-1">
-              Hex format (e.g., 0x00, 0x04, 0x100)
+              {t("common.hex_format")}
             </p>
           </div>
 
           {/* Size */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Size (bits) <span className="text-red-400">*</span>
+              {t("common.size")} ({t("common.bits")}) <span className="text-red-400">*</span>
             </label>
             <select
               value={formData.size}
@@ -177,11 +179,11 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
               className="input"
               disabled={isLoading}
             >
-              <option value={8}>8 bits</option>
-              <option value={16}>16 bits</option>
-              <option value={32}>32 bits</option>
-              <option value={64}>64 bits</option>
-              <option value={128}>128 bits</option>
+              <option value={8}>8 {t("common.bits")}</option>
+              <option value={16}>16 {t("common.bits")}</option>
+              <option value={32}>32 {t("common.bits")}</option>
+              <option value={64}>64 {t("common.bits")}</option>
+              <option value={128}>128 {t("common.bits")}</option>
             </select>
             {errors.size && (
               <p className="text-xs text-red-400 mt-1">{errors.size}</p>
@@ -199,7 +201,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
               disabled={isLoading}
             />
             <label htmlFor="volatile" className="text-sm text-surface-300">
-              Volatile (value may change without software intervention)
+              {t("project.create_register.volatile_desc")}
             </label>
           </div>
         </form>
@@ -212,7 +214,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
             className="btn-secondary"
             disabled={isLoading}
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSubmit}
@@ -220,10 +222,10 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
             disabled={isLoading}
           >
             {isLoading
-              ? "Saving..."
+              ? t("project.create_register.saving")
               : editingRegister
-                ? "Save Changes"
-                : "Create Register"
+                ? t("project.create_register.submit_save")
+                : t("project.create_register.submit_create")
             }
           </button>
         </div>

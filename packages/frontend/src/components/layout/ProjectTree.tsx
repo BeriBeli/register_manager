@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, Map, Box, Cpu } from "lucide-react";
 import { useRegisterStore } from "../../stores/registerStore";
 import { clsx } from "clsx";
@@ -73,6 +73,22 @@ export function ProjectTree() {
 
   // Expanded states
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+  // Auto-expand on load
+  useEffect(() => {
+    if (currentProject?.memoryMaps) {
+      const allIds = new Set<string>();
+      currentProject.memoryMaps.forEach(mm => {
+        allIds.add(mm.id);
+        mm.addressBlocks?.forEach(ab => {
+          allIds.add(ab.id);
+        });
+      });
+      if (allIds.size > 0 && expandedNodes.size === 0) {
+        setExpandedNodes(allIds);
+      }
+    }
+  }, [currentProject?.id, currentProject?.memoryMaps?.length]); // Auto expand on new project or structural change
 
   const toggleNode = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();

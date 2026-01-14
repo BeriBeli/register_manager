@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../../stores/registerStore";
 import type { CreateFieldInput } from "@register-manager/shared";
 
@@ -12,6 +13,7 @@ interface FieldDialogProps {
 }
 
 export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, initialBitWidth = 1, onClose }: FieldDialogProps) {
+  const { t } = useTranslation();
   const createField = useRegisterStore((state) => state.createField);
   const validateBitFieldConflict = useRegisterStore((state) => state.validateBitFieldConflict);
   const isLoading = useRegisterStore((state) => state.isLoading);
@@ -33,21 +35,21 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("project.create_field.errors.name_required");
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(formData.name)) {
-      newErrors.name = "Name must be a valid identifier";
+      newErrors.name = t("project.create_field.errors.name_invalid");
     }
 
     if (formData.bitOffset < 0 || formData.bitOffset >= registerSize) {
-      newErrors.bitOffset = `Bit offset must be between 0 and ${registerSize - 1}`;
+      newErrors.bitOffset = t("project.create_field.errors.offset_range", { max: registerSize - 1 });
     }
 
     if (formData.bitWidth <= 0 || formData.bitWidth > registerSize) {
-      newErrors.bitWidth = `Bit width must be between 1 and ${registerSize}`;
+      newErrors.bitWidth = t("project.create_field.errors.width_range", { max: registerSize });
     }
 
     if (formData.bitOffset + formData.bitWidth > registerSize) {
-      newErrors.bitWidth = `Field exceeds register size (${registerSize} bits)`;
+      newErrors.bitWidth = t("project.create_field.errors.exceeds_size", { size: registerSize });
     }
 
     // Check for bit field conflicts
@@ -65,7 +67,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
     } as any; // Type assertion for validation only
 
     if (validateBitFieldConflict(tempField, registerId)) {
-      newErrors.bitOffset = "Bit field overlaps with existing field";
+      newErrors.bitOffset = t("project.create_field.errors.overlap");
     }
 
     setErrors(newErrors);
@@ -90,7 +92,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
       <div className="bg-surface-900 border border-surface-700 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-surface-700">
-          <h2 className="text-lg font-semibold text-surface-100">Create New Field</h2>
+          <h2 className="text-lg font-semibold text-surface-100">{t("project.create_field.title")}</h2>
           <button
             onClick={onClose}
             className="btn-ghost p-2"
@@ -105,14 +107,14 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Name <span className="text-red-400">*</span>
+              {t("common.name")} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="input"
-              placeholder="e.g., ENABLE, MODE, STATUS"
+              placeholder={t("project.create_field.name_placeholder")}
               disabled={isLoading}
             />
             {errors.name && (
@@ -123,14 +125,14 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           {/* Display Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Display Name
+              {t("common.display_name")}
             </label>
             <input
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               className="input"
-              placeholder="e.g., Enable Bit"
+              placeholder={t("project.create_field.display_name_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -138,13 +140,13 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Description
+              {t("common.description")}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="input min-h-[60px]"
-              placeholder="Describe the purpose of this field..."
+              placeholder={t("project.create_field.desc_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -153,7 +155,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Bit Offset <span className="text-red-400">*</span>
+                {t("common.bit_offset")} <span className="text-red-400">*</span>
               </label>
               <input
                 type="number"
@@ -171,7 +173,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
 
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Bit Width <span className="text-red-400">*</span>
+                {t("common.bit_width")} <span className="text-red-400">*</span>
               </label>
               <input
                 type="number"
@@ -190,7 +192,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
 
           {/* Bit Range Preview */}
           <div className="p-3 bg-surface-800 rounded border border-surface-700">
-            <div className="text-xs text-surface-400 mb-1">Bit Range</div>
+            <div className="text-xs text-surface-400 mb-1">{t("project.create_field.bit_range")}</div>
             <div className="font-mono text-primary-400">
               [{formData.bitOffset + formData.bitWidth - 1}:{formData.bitOffset}]
             </div>
@@ -200,7 +202,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Access Type
+                {t("common.access")}
               </label>
               <select
                 value={formData.access || "read-write"}
@@ -226,7 +228,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
                 disabled={isLoading}
               />
               <label htmlFor="field-volatile" className="ml-2 text-sm text-surface-300">
-                Volatile
+                {t("common.volatile")}
               </label>
             </div>
           </div>
@@ -234,17 +236,17 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
           {/* Reset Value */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Reset Value (Hex)
+              {t("common.reset_value")} ({t("common.hex_format")})
             </label>
             <input
               type="text"
               value={formData.resetValue || ""}
               onChange={(e) => setFormData({ ...formData, resetValue: e.target.value })}
               className="input font-mono"
-              placeholder="e.g. 0x0"
+              placeholder={t("project.create_field.reset_placeholder")}
               disabled={isLoading}
             />
-            <p className="text-xs text-surface-500 mt-1">Optional. Default is unknown/undefined.</p>
+            <p className="text-xs text-surface-500 mt-1">{t("common.optional")}. {t("common.default_unknown")}.</p>
           </div>
         </form>
 
@@ -256,14 +258,14 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
             className="btn-secondary"
             disabled={isLoading}
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={handleSubmit}
             className="btn-primary"
             disabled={isLoading}
           >
-            {isLoading ? "Creating..." : "Create Field"}
+            {isLoading ? t("project.create_field.creating") : t("project.create_field.submit")}
           </button>
         </div>
       </div>

@@ -13,6 +13,32 @@
         "version": "版本",
         "admin": "管理后台"
     },
+    "project_view": {
+        "registers_title": "寄存器",
+        "registers_desc": "管理 {{name}} 的寄存器",
+        "add_register": "添加寄存器",
+        "no_registers_title": "暂无寄存器",
+        "no_registers_desc": "创建寄存器以定义此块的内存映射结构。",
+        "create_first_register": "创建第一个寄存器",
+        "blocks_title": "地址块",
+        "blocks_desc": "定义 {{name}} 的内存区域和块",
+        "add_block": "添加地址块",
+        "no_blocks_title": "暂无地址块",
+        "no_blocks_desc": "通过创建地址块来组织您的寄存器。",
+        "create_first_block": "创建第一个地址块",
+        "project_details": "项目详情",
+        "project_name": "项目名称",
+        "description": "描述",
+        "no_description": "未提供描述。",
+        "quick_actions": "快速操作",
+        "export_project": "导出项目",
+        "export_desc": "生成输出文件",
+        "project_settings": "项目设置",
+        "settings_desc": "配置全局属性",
+        "subtitle": "寄存器管理器",
+        "export": "导出",
+        "no_desc_short": "无描述"
+    },
     "dashboard": {
         "title": "项目",
         "overview": "概览",
@@ -101,7 +127,28 @@
         "save": "保存",
         "cancel": "取消",
         "delete": "删除",
-        "confirm": "确认"
+        "confirm": "确认",
+        "name": "名称",
+        "display_name": "显示名称",
+        "description": "描述",
+        "base_address": "基地址",
+        "range": "范围",
+        "width": "位宽",
+        "size": "大小",
+        "bits": "位",
+        "usage": "用途",
+        "address_offset": "地址偏移",
+        "bit_offset": "位偏移",
+        "bit_width": "位宽",
+        "access": "访问类型",
+        "reset_value": "复位值",
+        "volatile": "易失性",
+        "yes": "是",
+        "no": "否",
+        "settings": "设置",
+        "optional": "可选",
+        "hex_format": "十六进制格式 (例如 0x00)",
+        "default_unknown": "默认为 未知/未定义"
     },
     "auth": {
         "login": "登录",
@@ -119,6 +166,9 @@
         "hasAccount": "已有账户？",
         "loginFailed": "登录失败，请检查您的凭据。",
         "registerFailed": "注册失败，请重试。",
+        "passwordMismatch": "两次输入的密码不一致",
+        "confirmPassword": "确认密码",
+        "confirmPasswordPlaceholder": "确认您的密码",
         "loading": "请稍候...",
         "user": "用户"
     },
@@ -158,6 +208,87 @@
                 "placeholder": "新密码",
                 "success": "密码重置成功！"
             }
+        }
+    },
+    "project": {
+        "delete_register": {
+            "title": "删除寄存器",
+            "desc": "确定要删除寄存器 \"{{name}}\" 吗？"
+        },
+        "delete_block": {
+            "title": "删除地址块",
+            "desc": "确定要删除地址块 \"{{name}}\" 吗？"
+        },
+        "delete_field": {
+            "title": "删除字段",
+            "desc": "确定要删除字段 \"{{name}}\" 吗？"
+        },
+        "delete_project": {
+            "title": "删除项目",
+            "desc": "确定要删除项目 \"{{name}}\" 吗？"
+        },
+        "add_block": {
+            "title": "添加地址块",
+            "name_placeholder": "例如：ctrl_regs",
+            "display_name_placeholder": "例如：控制寄存器组",
+            "desc_placeholder": "地址块描述...",
+            "base_placeholder": "0x1000",
+            "range_placeholder": "0x100",
+            "errors": {
+                "name_required": "名称必填",
+                "name_invalid": "名称必须是有效的标识符",
+                "base_invalid": "基地址必须以 0x 开头",
+                "range_invalid": "范围必须以 0x 开头",
+                "width_invalid": "位宽必须是正整数",
+                "submit_failed": "创建地址块失败"
+            },
+            "submit": "创建地址块",
+            "creating": "创建中...",
+            "title_edit": "编辑地址块",
+            "submit_save": "保存更改",
+            "saving": "保存中...",
+            "save_failed": "保存地址块失败"
+        },
+        "create_register": {
+            "title_create": "创建新寄存器",
+            "title_edit": "编辑寄存器",
+            "name_placeholder": "例如：CTRL, STATUS, CONFIG",
+            "display_name_placeholder": "例如：控制寄存器",
+            "desc_placeholder": "描述该寄存器的用途...",
+            "offset_placeholder": "0x00",
+            "errors": {
+                "name_required": "名称必填",
+                "name_invalid": "名称必须是有效的标识符",
+                "offset_required": "地址偏移必填",
+                "offset_invalid": "无效的十六进制地址",
+                "size_invalid": "大小必须在 1 到 1024 位之间"
+            },
+            "volatile_desc": "易失性 (值可能在无软件干预下改变)",
+            "submit_create": "创建寄存器",
+            "submit_save": "保存更改",
+            "saving": "保存中..."
+        },
+        "create_field": {
+            "title": "创建新字段",
+            "name_placeholder": "例如：ENABLE, MODE, STATUS",
+            "display_name_placeholder": "例如：使能位",
+            "desc_placeholder": "描述该字段的用途...",
+            "reset_placeholder": "例如 0x0",
+            "errors": {
+                "name_required": "名称必填",
+                "name_invalid": "名称必须是有效的标识符",
+                "offset_range": "位偏移必须在 0 到 {{max}} 之间",
+                "width_range": "位宽必须在 1 到 {{max}} 之间",
+                "exceeds_size": "字段超出寄存器大小 ({{size}} 位)",
+                "overlap": "位字段与现有字段重叠"
+            },
+            "bit_range": "位范围",
+            "submit": "创建字段",
+            "creating": "创建中...",
+            "title_edit": "编辑字段",
+            "submit_save": "保存更改",
+            "saving": "保存中...",
+            "save_failed": "更新字段失败"
         }
     },
     "versions": {

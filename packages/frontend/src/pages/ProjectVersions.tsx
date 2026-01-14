@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { RotateCw, Plus, History as HistoryIcon, User as UserIcon, Calendar } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 
 interface ProjectVersion {
   id: string;
@@ -96,6 +97,17 @@ export function ProjectVersions() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-surface-950">
+      <ConfirmDialog
+        isOpen={!!versionToRestore}
+        onClose={() => setVersionToRestore(null)}
+        onConfirm={() => versionToRestore && restoreMutation.mutate(versionToRestore.id)}
+        title={t("versions.restore_modal.title")}
+        description={`${t("versions.restore_modal.warning")} ${versionToRestore ? `(${versionToRestore.version})` : ""}`}
+        confirmText={t("versions.restore_modal.confirm")}
+        isLoading={restoreMutation.isPending}
+        variant="warning"
+      />
+
       {/* Header */}
       <div className="h-14 border-b border-surface-800 flex items-center justify-between px-6 bg-surface-900 shrink-0">
         <div className="flex items-center gap-3">
@@ -211,42 +223,6 @@ export function ProjectVersions() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Restore Confirmation Modal */}
-      {versionToRestore && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-surface-900 border border-surface-700 rounded-xl shadow-2xl max-w-sm w-full p-6 text-center space-y-4">
-            <div className="w-12 h-12 bg-yellow-500/20 text-yellow-500 rounded-full flex items-center justify-center mx-auto">
-              <RotateCw className="w-6 h-6" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-surface-100">{t("versions.restore_modal.title")}</h3>
-              <p className="text-sm text-surface-400">
-                {t("versions.restore_modal.warning")}
-                <br />
-                <span className="font-semibold text-surface-200 mt-2 block">
-                  Restore to: {versionToRestore.version}
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setVersionToRestore(null)}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-surface-800 text-surface-300 hover:bg-surface-700 transition-colors"
-              >
-                {t("versions.restore_modal.cancel")}
-              </button>
-              <button
-                onClick={() => restoreMutation.mutate(versionToRestore.id)}
-                disabled={restoreMutation.isPending}
-                className="flex-1 py-2 rounded-lg text-sm font-medium bg-yellow-600 text-white hover:bg-yellow-500 transition-colors disabled:opacity-50"
-              >
-                {restoreMutation.isPending ? t("versions.restore_modal.restoring") : t("versions.restore_modal.confirm")}
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -4,6 +4,8 @@ import { Edit2, Trash2, Plus } from "lucide-react";
 import { useRegisterStore } from "../../stores/registerStore";
 import type { Field } from "@register-manager/shared";
 import { getFieldAccess } from "@register-manager/shared";
+import { ConfirmDialog } from "../common/ConfirmDialog";
+import { useTranslation } from "react-i18next";
 
 interface InteractiveBitFieldEditorProps {
   registerId: string;
@@ -29,9 +31,14 @@ export function InteractiveBitFieldEditor({
   onAddField,
   onRangeSelected,
 }: InteractiveBitFieldEditorProps) {
+  const { t } = useTranslation();
   const deleteField = useRegisterStore((state) => state.deleteField);
   const [hoveredField, setHoveredField] = useState<string | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
+
+  // Confirm Dialog State
+  const [fieldToDelete, setFieldToDelete] = useState<Field | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Drag selection state
   const [isDragging, setIsDragging] = useState(false);
@@ -131,10 +138,21 @@ export function InteractiveBitFieldEditor({
     onFieldClick?.(field);
   };
 
-  const handleDeleteField = async (e: React.MouseEvent, fieldId: string) => {
+  const handleDeleteFieldClick = (e: React.MouseEvent, field: Field) => {
     e.stopPropagation();
-    if (confirm("Are you sure you want to delete this field?")) {
-      await deleteField(fieldId);
+    setFieldToDelete(field);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!fieldToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await deleteField(fieldToDelete.id);
+      setFieldToDelete(null);
+    } catch (e) {
+      console.error("Delete failed", e);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -173,9 +191,6 @@ export function InteractiveBitFieldEditor({
       }
 
       // Show label/controls on the MSB (visually top-left-most part of the field)
-      // If the field is split, this ensures controls only appear once.
-      // Also check if isFirstInRow to handle case where MSB is not in this row (very rare for logic but safest is isFieldEnd)
-      // Actually strictly isFieldEnd is best for "single control".
       const showControls = isFieldEnd;
       const showLabel = isFieldEnd;
 
@@ -185,11 +200,8 @@ export function InteractiveBitFieldEditor({
           className={clsx(
             "h-12 flex items-center justify-center text-2xs font-mono cursor-pointer transition-all border-y border-r relative group select-none",
             colorClass,
-            // MSB (Left side) gets left border and rounded left
             isFieldEnd && "rounded-l border-l",
-            // LSB (Right side) gets rounded right
             isFieldStart && "rounded-r",
-            // Empty bits get left border
             !field && "border-l",
             isHovered && "ring-2 ring-primary-400 z-10",
             isSelected && "ring-2 ring-primary-500 z-10",
@@ -212,12 +224,12 @@ export function InteractiveBitFieldEditor({
           onMouseUp={handleMouseUp}
           onMouseLeave={() => setHoveredField(null)}
         >
-          {/* Bit number - moved to corner */}
+          {/* Bit number */}
           <span className="absolute top-0.5 left-1 text-surface-500 text-[9px] font-mono pointer-events-none leading-none opacity-60 group-hover:opacity-100">
             {bit}
           </span>
 
-          {/* Field name (only on MSB of field) */}
+          {/* Field name */}
           {field && showLabel && field.bitWidth > 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-1">
               <span className="text-xs font-medium text-surface-100 truncate max-w-full bg-surface-900/50 px-1 rounded backdrop-blur-[1px]">
@@ -243,7 +255,7 @@ export function InteractiveBitFieldEditor({
                 <Edit2 className="w-3 h-3 text-primary-400" />
               </button>
               <button
-                onClick={(e) => handleDeleteField(e, field.id)}
+                onClick={(e) => handleDeleteFieldClick(e, field)}
                 className="p-1 hover:bg-surface-700 rounded"
                 title="Delete field"
               >
@@ -272,6 +284,18 @@ export function InteractiveBitFieldEditor({
 
   return (
     <div className="space-y-6" onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
+      <ConfirmDialog
+        isOpen={!!fieldToDelete}
+        onClose={() => setFieldToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={t("project.delete_field.title")}
+        description={t("project.delete_field.desc", { name: fieldToDelete?.name })}
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
+        variant="danger"
+        isLoading={deleteLoading}
+      />
+
       {/* Bit field grid */}
       <div className="space-y-1">{rowElements}</div>
 
@@ -378,7 +402,7 @@ export function InteractiveBitFieldEditor({
                       <Edit2 className="w-4 h-4 text-surface-400" />
                     </button>
                     <button
-                      onClick={(e) => handleDeleteField(e, field.id)}
+                      onClick={(e) => handleDeleteFieldClick(e, field)}
                       className="p-2 hover:bg-surface-700 rounded"
                       title="Delete"
                     >

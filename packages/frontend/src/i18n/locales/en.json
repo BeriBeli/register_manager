@@ -13,6 +13,32 @@
         "version": "Version",
         "admin": "Admin Area"
     },
+    "project_view": {
+        "registers_title": "Registers",
+        "registers_desc": "Manage registers for {{name}}",
+        "add_register": "Add Register",
+        "no_registers_title": "No registers yet",
+        "no_registers_desc": "Create registers to define the memory map structure for this block.",
+        "create_first_register": "Create First Register",
+        "blocks_title": "Address Blocks",
+        "blocks_desc": "Define memory regions and blocks for {{name}}",
+        "add_block": "Add Block",
+        "no_blocks_title": "No address blocks",
+        "no_blocks_desc": "Start by creating an address block to organize your registers.",
+        "create_first_block": "Create First Block",
+        "project_details": "Project Details",
+        "project_name": "Project Name",
+        "description": "Description",
+        "no_description": "No description provided.",
+        "quick_actions": "Quick Actions",
+        "export_project": "Export Project",
+        "export_desc": "Generate output files",
+        "project_settings": "Project Settings",
+        "settings_desc": "Configure global properties",
+        "subtitle": "Register Manager",
+        "export": "Export",
+        "no_desc_short": "No description"
+    },
     "dashboard": {
         "title": "Projects",
         "overview": "Overview",
@@ -101,7 +127,28 @@
         "save": "Save",
         "cancel": "Cancel",
         "delete": "Delete",
-        "confirm": "Confirm"
+        "confirm": "Confirm",
+        "name": "Name",
+        "display_name": "Display Name",
+        "description": "Description",
+        "base_address": "Base Address",
+        "range": "Range",
+        "width": "Width",
+        "size": "Size",
+        "bits": "bits",
+        "usage": "Usage",
+        "address_offset": "Address Offset",
+        "bit_offset": "Bit Offset",
+        "bit_width": "Bit Width",
+        "access": "Access Type",
+        "reset_value": "Reset Value",
+        "volatile": "Volatile",
+        "yes": "Yes",
+        "no": "No",
+        "settings": "Settings",
+        "optional": "Optional",
+        "hex_format": "Hex format (e.g. 0x00)",
+        "default_unknown": "Default is unknown/undefined"
     },
     "auth": {
         "login": "Sign In",
@@ -119,6 +166,9 @@
         "hasAccount": "Already have an account?",
         "loginFailed": "Login failed. Please check your credentials.",
         "registerFailed": "Registration failed. Please try again.",
+        "passwordMismatch": "Passwords do not match",
+        "confirmPassword": "Confirm Password",
+        "confirmPasswordPlaceholder": "Confirm your password",
         "loading": "Please wait...",
         "user": "User"
     },
@@ -158,6 +208,87 @@
                 "placeholder": "New password",
                 "success": "Password reset successfully!"
             }
+        }
+    },
+    "project": {
+        "delete_register": {
+            "title": "Delete Register",
+            "desc": "Are you sure you want to delete register \"{{name}}\"?"
+        },
+        "delete_block": {
+            "title": "Delete Address Block",
+            "desc": "Are you sure you want to delete address block \"{{name}}\"?"
+        },
+        "delete_field": {
+            "title": "Delete Field",
+            "desc": "Are you sure you want to delete field \"{{name}}\"?"
+        },
+        "delete_project": {
+            "title": "Delete Project",
+            "desc": "Are you sure you want to delete project \"{{name}}\"?"
+        },
+        "add_block": {
+            "title": "Add Address Block",
+            "name_placeholder": "e.g., ctrl_regs",
+            "display_name_placeholder": "e.g., Control Registers",
+            "desc_placeholder": "Block description...",
+            "base_placeholder": "0x1000",
+            "range_placeholder": "0x100",
+            "errors": {
+                "name_required": "Name is required",
+                "name_invalid": "Name must be a valid identifier",
+                "base_invalid": "Base address must start with 0x",
+                "range_invalid": "Range must start with 0x",
+                "width_invalid": "Width must be a positive integer",
+                "submit_failed": "Failed to create address block"
+            },
+            "submit": "Create Block",
+            "creating": "Creating...",
+            "title_edit": "Edit Address Block",
+            "submit_save": "Save Changes",
+            "saving": "Saving...",
+            "save_failed": "Failed to save address block"
+        },
+        "create_register": {
+            "title_create": "Create New Register",
+            "title_edit": "Edit Register",
+            "name_placeholder": "e.g., CTRL, STATUS, CONFIG",
+            "display_name_placeholder": "e.g., Control Register",
+            "desc_placeholder": "Describe the purpose of this register...",
+            "offset_placeholder": "0x00",
+            "errors": {
+                "name_required": "Name is required",
+                "name_invalid": "Name must be a valid identifier",
+                "offset_required": "Address offset is required",
+                "offset_invalid": "Invalid hex address",
+                "size_invalid": "Size must be between 1 and 1024 bits"
+            },
+            "volatile_desc": "Volatile (value may change without software intervention)",
+            "submit_create": "Create Register",
+            "submit_save": "Save Changes",
+            "saving": "Saving..."
+        },
+        "create_field": {
+            "title": "Create New Field",
+            "name_placeholder": "e.g., ENABLE, MODE, STATUS",
+            "display_name_placeholder": "e.g., Enable Bit",
+            "desc_placeholder": "Describe the purpose of this field...",
+            "reset_placeholder": "e.g. 0x0",
+            "errors": {
+                "name_required": "Name is required",
+                "name_invalid": "Name must be a valid identifier",
+                "offset_range": "Bit offset must be between 0 and {{max}}",
+                "width_range": "Bit width must be between 1 and {{max}}",
+                "exceeds_size": "Field exceeds register size ({{size}} bits)",
+                "overlap": "Bit field overlaps with existing field"
+            },
+            "bit_range": "Bit Range",
+            "submit": "Create Field",
+            "creating": "Creating...",
+            "title_edit": "Edit Field",
+            "submit_save": "Save Changes",
+            "saving": "Saving...",
+            "save_failed": "Failed to update field"
         }
     },
     "versions": {

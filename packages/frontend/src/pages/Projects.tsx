@@ -1,9 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Plus, FolderOpen, Clock, ChevronRight, Trash2, LayoutDashboard } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../stores/registerStore";
 import { ProjectDialog } from "../components/project/ProjectDialog";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
+
+interface Project {
+  id: string;
+  name: string;
+  displayName?: string;
+  description?: string;
+  vlnv: {
+    vendor: string;
+    library: string;
+    name: string;
+    version: string;
+  };
+  updatedAt: string;
+}
 
 export function Projects() {
   const { t } = useTranslation();
@@ -12,6 +28,11 @@ export function Projects() {
   const fetchProjects = useRegisterStore((state) => state.fetchProjects);
   const deleteProject = useRegisterStore((state) => state.deleteProject);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
+  const navigate = useNavigate();
+
+  // Delete State
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -23,8 +44,38 @@ export function Projects() {
     fetchProjects();
   };
 
+  const handleDeleteClick = (project: any) => {
+    setProjectToDelete(project);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!projectToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await deleteProject(projectToDelete.id);
+      setProjectToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete project", error);
+      alert(t("common.error")); // Basic fallback if store doesn't handle error UI
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-surface-950">
+      <ConfirmDialog
+        isOpen={!!projectToDelete}
+        onClose={() => setProjectToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={t("project.delete_project.title")}
+        description={t("project.delete_project.desc", { name: projectToDelete?.displayName || projectToDelete?.name })}
+        confirmText={t("common.delete")}
+        cancelText={t("common.cancel")}
+        variant="danger"
+        isLoading={deleteLoading}
+      />
+
       {/* Dashboard Header */}
       <div className="h-16 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-sm flex items-center justify-between px-8 shrink-0 relative z-10">
         <div className="flex items-center gap-3">
@@ -36,8 +87,6 @@ export function Projects() {
             <span className="text-[10px] uppercase tracking-wider text-surface-400 font-medium">{t('dashboard.overview')}</span>
           </div>
         </div>
-
-
       </div>
 
       <div className="flex-1 overflow-auto p-8">
@@ -108,9 +157,7 @@ export function Projects() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            if (confirm(`${t('common.delete')} "${project.name}" ? `)) {
-                              deleteProject(project.id);
-                            }
+                            handleDeleteClick(project);
                           }}
                           className="p-2 text-surface-500 hover:text-red-400 hover:bg-surface-700/50 rounded transition-colors z-10"
                           title={t('common.delete')}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../../stores/registerStore";
 import type { AddressBlock } from "@register-manager/shared";
 
@@ -10,6 +11,7 @@ interface AddressBlockDialogProps {
 }
 
 export function AddressBlockDialog({ memoryMapId, initialData, onClose }: AddressBlockDialogProps) {
+  const { t } = useTranslation();
   const createAddressBlock = useRegisterStore((state) => state.createAddressBlock);
   const updateAddressBlock = useRegisterStore((state) => state.updateAddressBlock);
   const isLoading = useRegisterStore((state) => state.isLoading);
@@ -46,22 +48,22 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
     const newErrors: Record<string, string> = {};
 
     if (!formData.name) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("project.add_block.errors.name_required");
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(formData.name)) {
-      newErrors.name = "Name must be a valid identifier";
+      newErrors.name = t("project.add_block.errors.name_invalid");
     }
 
     if (!formData.baseAddress.startsWith("0x")) {
-      newErrors.baseAddress = "Base address must start with 0x";
+      newErrors.baseAddress = t("project.add_block.errors.base_invalid");
     }
 
     if (!formData.range.startsWith("0x")) {
-      newErrors.range = "Range must start with 0x";
+      newErrors.range = t("project.add_block.errors.range_invalid");
     }
 
     const width = parseInt(formData.width);
     if (isNaN(width) || width <= 0) {
-      newErrors.width = "Width must be a positive integer";
+      newErrors.width = t("project.add_block.errors.width_invalid");
     }
 
     setErrors(newErrors);
@@ -103,7 +105,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
       }
     } catch (error) {
       console.error("Failed to save address block:", error);
-      setErrors({ submit: "Failed to save address block. Please try again." });
+      setErrors({ submit: t("project.add_block.save_failed") });
     }
   };
 
@@ -113,7 +115,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-surface-700">
           <h2 className="text-lg font-semibold text-surface-100">
-            {isEdit ? "Edit Address Block" : "Add Address Block"}
+            {isEdit ? t("project.add_block.title_edit") : t("project.add_block.title")}
           </h2>
           <button onClick={() => onClose()} className="btn-ghost p-2" disabled={isLoading}>
             <X className="w-4 h-4" />
@@ -125,14 +127,14 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Name <span className="text-red-400">*</span>
+              {t("common.name")} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="input"
-              placeholder="e.g., ctrl_regs"
+              placeholder={t("project.add_block.name_placeholder")}
               disabled={isLoading}
               autoFocus
             />
@@ -142,14 +144,14 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
           {/* Display Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Display Name
+              {t("common.display_name")}
             </label>
             <input
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               className="input"
-              placeholder="e.g., Control Registers"
+              placeholder={t("project.add_block.display_name_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -158,28 +160,28 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Base Address <span className="text-red-400">*</span>
+                {t("common.base_address")} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={formData.baseAddress}
                 onChange={(e) => setFormData({ ...formData, baseAddress: e.target.value })}
                 className="input font-mono"
-                placeholder="0x1000"
+                placeholder={t("project.add_block.base_placeholder")}
                 disabled={isLoading}
               />
               {errors.baseAddress && <p className="text-xs text-red-400 mt-1">{errors.baseAddress}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Range <span className="text-red-400">*</span>
+                {t("common.range")} <span className="text-red-400">*</span>
               </label>
               <input
                 type="text"
                 value={formData.range}
                 onChange={(e) => setFormData({ ...formData, range: e.target.value })}
                 className="input font-mono"
-                placeholder="0x100"
+                placeholder={t("project.add_block.range_placeholder")}
                 disabled={isLoading}
               />
               {errors.range && <p className="text-xs text-red-400 mt-1">{errors.range}</p>}
@@ -190,7 +192,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Width (bits) <span className="text-red-400">*</span>
+                {t("common.width")} ({t("common.bits")}) <span className="text-red-400">*</span>
               </label>
               <input
                 type="number"
@@ -203,7 +205,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
             </div>
             <div>
               <label className="block text-sm font-medium text-surface-300 mb-1">
-                Usage
+                {t("common.usage")}
               </label>
               <select
                 value={formData.usage}
@@ -221,13 +223,13 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Description
+              {t("common.description")}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="input min-h-[60px]"
-              placeholder="Block description..."
+              placeholder={t("project.add_block.desc_placeholder")}
               disabled={isLoading}
             />
           </div>
@@ -242,10 +244,12 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 p-4 border-t border-surface-700">
           <button type="button" onClick={() => onClose()} className="btn-secondary" disabled={isLoading}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button onClick={handleSubmit} className="btn-primary" disabled={isLoading}>
-            {isLoading ? (isEdit ? "Saving..." : "Creating...") : (isEdit ? "Save Changes" : "Create Block")}
+            {isLoading
+              ? (isEdit ? t("project.add_block.saving") : t("project.add_block.creating"))
+              : (isEdit ? t("project.add_block.submit_save") : t("project.add_block.submit"))}
           </button>
         </div>
       </div>
