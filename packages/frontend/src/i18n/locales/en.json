@@ -12,7 +12,8 @@
             "dark": "Dark Mode",
             "system": "System"
         },
-        "language": "Language"
+        "language": "Language",
+        "version": "Version"
     },
     "project_view": {
         "registers_title": "Registers",

@@ -11,6 +11,11 @@ import {
 } from "@register-manager/shared";
 import { auth } from "../lib/auth";
 import { z } from "zod";
+import {
+  DEFAULT_MEMORY_MAP_NAME,
+  DEFAULT_MEMORY_MAP_DISPLAY_NAME,
+  DEFAULT_ADDRESS_UNIT_BITS,
+} from "../constants";
 
 // Define variables type for authenticated routes
 type Variables = {
@@ -142,14 +147,14 @@ projectRoutes.post("/", zValidator("json", createProjectSchema), async (c) => {
     })
     .returning();
 
-  // Create default memory map
+  // Create default memory map using constants
   await db
     .insert(memoryMaps)
     .values({
       projectId: newProject.id,
-      name: "default_map",
-      displayName: "Default Memory Map",
-      addressUnitBits: 8,
+      name: DEFAULT_MEMORY_MAP_NAME,
+      displayName: DEFAULT_MEMORY_MAP_DISPLAY_NAME,
+      addressUnitBits: DEFAULT_ADDRESS_UNIT_BITS,
     });
 
   return c.json({ data: newProject }, 201);

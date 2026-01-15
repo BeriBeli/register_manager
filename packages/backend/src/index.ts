@@ -155,21 +155,30 @@ const port = parseInt(process.env.PORT || "3000");
 const host = process.env.HOST || "localhost";
 
 // Seed Admin
+// Security: ADMIN_EMAIL and ADMIN_PASSWORD must be explicitly set via environment variables.
+// If not set, admin seeding is skipped.
 const seedAdmin = async () => {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  // Require explicit configuration in all environments
+  if (!adminEmail || !adminPassword) {
+    console.warn("⚠️  ADMIN_EMAIL and/or ADMIN_PASSWORD not set. Skipping admin seeding.");
+    console.warn("   Set these environment variables to create an admin account.");
+    return;
+  }
+
   try {
     const { db } = await import("./db");
     const { user: userTable } = await import("./db/schema");
     const { eq } = await import("drizzle-orm");
-
-    const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
-    const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
     const existing = await db.query.user.findFirst({
       where: eq(userTable.email, adminEmail)
     });
 
     if (!existing) {
-      console.log("🌱 key: Seeding default admin account...");
+      console.log("🌱 Seeding admin account...");
       await auth.api.signUpEmail({
         body: {
           email: adminEmail,
@@ -177,7 +186,7 @@ const seedAdmin = async () => {
           name: "Administrator",
         }
       });
-      console.log(`✅ Default admin created: ${adminEmail} (password from env)`);
+      console.log(`✅ Admin account created: ${adminEmail}`);
     } else {
       // Ensure admin has correct rights even if exists
       if (existing.role !== "admin" || !existing.approved) {

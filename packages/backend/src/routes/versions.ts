@@ -14,6 +14,7 @@ import {
   enumeratedValues,
 } from "../db/schema";
 import { auth } from "../lib/auth";
+import { hasProjectAccess } from "../lib/access";
 
 // Define variables type for authenticated routes
 type Variables = {
@@ -45,6 +46,12 @@ versionRoutes.post(
     const projectId = c.req.param("projectId");
     const { version, description } = c.req.valid("json");
     const user = c.get("user")!;
+
+    // Verify project access
+    const canAccess = await hasProjectAccess(projectId, user.id);
+    if (!canAccess && user.role !== "admin") {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
 
     // 1. Fetch entire project tree
     const projectData = await db.query.projects.findFirst({
@@ -94,6 +101,13 @@ versionRoutes.post(
 // List Versions
 versionRoutes.get("/:projectId", async (c) => {
   const projectId = c.req.param("projectId");
+  const user = c.get("user")!;
+
+  // Verify project access
+  const canAccess = await hasProjectAccess(projectId, user.id);
+  if (!canAccess && user.role !== "admin") {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const versions = await db.query.projectVersions.findMany({
     where: eq(projectVersions.projectId, projectId),
@@ -110,10 +124,22 @@ versionRoutes.get("/:projectId", async (c) => {
 });
 
 // Restore Version
+// WARNING: This operation performs a full delete + recreate strategy.
+// - All existing data under the project's memory maps will be deleted
+// - New IDs will be generated for all restored entities
+// - External references to old IDs will break
+// - No optimistic locking is implemented; concurrent modifications may cause data loss
+// TODO: Consider implementing updatedAt/version-based optimistic locking
 versionRoutes.post("/:projectId/:versionId/restore", async (c) => {
   const projectId = c.req.param("projectId");
   const versionId = c.req.param("versionId");
   const user = c.get("user")!;
+
+  // Verify project access
+  const canAccess = await hasProjectAccess(projectId, user.id);
+  if (!canAccess && user.role !== "admin") {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   // 1. Get the snapshot
   const versionRecord = await db.query.projectVersions.findFirst({

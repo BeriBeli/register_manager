@@ -10,8 +10,31 @@ import {
   updateFieldSchema,
   createResetValueSchema,
 } from "@register-manager/shared";
+import { auth } from "../lib/auth";
+import {
+  verifyProjectAccessByAddressBlock,
+  verifyProjectAccessByRegister,
+  getProjectIdFromRegister,
+  hasProjectAccess,
+} from "../lib/access";
+import { DEFAULT_RESET_TYPE_REF } from "../constants";
 
-export const registerRoutes = new Hono();
+// Define variables type for authenticated routes
+type Variables = {
+  user: typeof auth.$Infer.Session.user | null;
+  session: typeof auth.$Infer.Session.session | null;
+};
+
+export const registerRoutes = new Hono<{ Variables: Variables }>();
+
+// Auth middleware - require authentication
+registerRoutes.use("*", async (c, next) => {
+  const user = c.get("user");
+  if (!user) {
+    return c.json({ error: "Unauthorized", code: "UNAUTHORIZED" }, 401);
+  }
+  await next();
+});
 
 // ============================================================================
 // Registers CRUD
@@ -20,6 +43,13 @@ export const registerRoutes = new Hono();
 // Get all registers for an address block
 registerRoutes.get("/address-block/:abId", async (c) => {
   const abId = c.req.param("abId");
+  const user = c.get("user")!;
+
+  // Verify access to the address block's project
+  const { hasAccess } = await verifyProjectAccessByAddressBlock(abId, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const result = await db.query.registers.findMany({
     where: eq(registers.parentId, abId),
@@ -40,6 +70,13 @@ registerRoutes.get("/address-block/:abId", async (c) => {
 // Get single register with fields
 registerRoutes.get("/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
+
+  // Verify access
+  const { hasAccess } = await verifyProjectAccessByRegister(id, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const register = await db.query.registers.findFirst({
     where: eq(registers.id, id),
@@ -67,6 +104,13 @@ registerRoutes.post(
   async (c) => {
     const abId = c.req.param("abId");
     const data = c.req.valid("json");
+    const user = c.get("user")!;
+
+    // Verify access
+    const { hasAccess } = await verifyProjectAccessByAddressBlock(abId, user.id, user.role);
+    if (!hasAccess) {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
 
     const [newRegister] = await db
       .insert(registers)
@@ -88,6 +132,13 @@ registerRoutes.put(
   async (c) => {
     const id = c.req.param("id");
     const data = c.req.valid("json");
+    const user = c.get("user")!;
+
+    // Verify access
+    const { hasAccess } = await verifyProjectAccessByRegister(id, user.id, user.role);
+    if (!hasAccess) {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
 
     const [updated] = await db
       .update(registers)
@@ -109,6 +160,13 @@ registerRoutes.put(
 // Delete register
 registerRoutes.delete("/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
+
+  // Verify access
+  const { hasAccess } = await verifyProjectAccessByRegister(id, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const [deleted] = await db
     .delete(registers)
@@ -129,6 +187,13 @@ registerRoutes.delete("/:id", async (c) => {
 // Get all fields for a register
 registerRoutes.get("/:regId/fields", async (c) => {
   const regId = c.req.param("regId");
+  const user = c.get("user")!;
+
+  // Verify access
+  const { hasAccess } = await verifyProjectAccessByRegister(regId, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const result = await db.query.fields.findMany({
     where: eq(fields.registerId, regId),
@@ -149,6 +214,13 @@ registerRoutes.post(
   async (c) => {
     const regId = c.req.param("regId");
     const data = c.req.valid("json");
+    const user = c.get("user")!;
+
+    // Verify access
+    const { hasAccess } = await verifyProjectAccessByRegister(regId, user.id, user.role);
+    if (!hasAccess) {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
 
     // Extract resetValue from data as it's not in fields table
     // @ts-ignore - resetValue exists in schema but not in fields table definition inference
@@ -166,7 +238,7 @@ registerRoutes.post(
       await db.insert(resets).values({
         fieldId: newField.id,
         value: resetValue,
-        resetTypeRef: "HARD", // Default to HARD reset
+        resetTypeRef: DEFAULT_RESET_TYPE_REF,
       });
     }
 
@@ -181,6 +253,22 @@ registerRoutes.put(
   async (c) => {
     const id = c.req.param("id");
     const data = c.req.valid("json");
+    const user = c.get("user")!;
+
+    // Get the field to find its register, then verify access
+    const field = await db.query.fields.findFirst({
+      where: eq(fields.id, id),
+      columns: { registerId: true },
+    });
+    if (!field) {
+      return c.json({ error: "Field not found", code: "NOT_FOUND" }, 404);
+    }
+
+    const { hasAccess } = await verifyProjectAccessByRegister(field.registerId, user.id, user.role);
+    if (!hasAccess) {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
+
     // Extract resetValue
     // @ts-ignore
     const { resetValue, ...fieldData } = data;
@@ -215,7 +303,7 @@ registerRoutes.put(
         await db.insert(resets).values({
           fieldId: id,
           value: resetValue,
-          resetTypeRef: "HARD",
+          resetTypeRef: DEFAULT_RESET_TYPE_REF,
         });
       }
     }
@@ -231,6 +319,21 @@ registerRoutes.put(
 // Delete field
 registerRoutes.delete("/fields/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
+
+  // Get the field to find its register, then verify access
+  const field = await db.query.fields.findFirst({
+    where: eq(fields.id, id),
+    columns: { registerId: true },
+  });
+  if (!field) {
+    return c.json({ error: "Field not found", code: "NOT_FOUND" }, 404);
+  }
+
+  const { hasAccess } = await verifyProjectAccessByRegister(field.registerId, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const [deleted] = await db
     .delete(fields)
@@ -254,6 +357,21 @@ registerRoutes.post(
   async (c) => {
     const fieldId = c.req.param("fieldId");
     const data = c.req.valid("json");
+    const user = c.get("user")!;
+
+    // Get the field to find its register, then verify access
+    const field = await db.query.fields.findFirst({
+      where: eq(fields.id, fieldId),
+      columns: { registerId: true },
+    });
+    if (!field) {
+      return c.json({ error: "Field not found", code: "NOT_FOUND" }, 404);
+    }
+
+    const { hasAccess } = await verifyProjectAccessByRegister(field.registerId, user.id, user.role);
+    if (!hasAccess) {
+      return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+    }
 
     const [newReset] = await db
       .insert(resets)
@@ -269,6 +387,29 @@ registerRoutes.post(
 
 registerRoutes.delete("/resets/:id", async (c) => {
   const id = c.req.param("id");
+  const user = c.get("user")!;
+
+  // Get the reset to find its field -> register, then verify access
+  const reset = await db.query.resets.findFirst({
+    where: eq(resets.id, id),
+    columns: { fieldId: true },
+  });
+  if (!reset) {
+    return c.json({ error: "Reset not found", code: "NOT_FOUND" }, 404);
+  }
+
+  const field = await db.query.fields.findFirst({
+    where: eq(fields.id, reset.fieldId),
+    columns: { registerId: true },
+  });
+  if (!field) {
+    return c.json({ error: "Field not found", code: "NOT_FOUND" }, 404);
+  }
+
+  const { hasAccess } = await verifyProjectAccessByRegister(field.registerId, user.id, user.role);
+  if (!hasAccess) {
+    return c.json({ error: "Access denied", code: "FORBIDDEN" }, 403);
+  }
 
   const [deleted] = await db
     .delete(resets)

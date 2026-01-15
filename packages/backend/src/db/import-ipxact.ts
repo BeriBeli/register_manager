@@ -81,23 +81,23 @@ async function importIpxactXml(xmlFilePath: string) {
   const adminEmail = process.env.ADMIN_EMAIL;
 
   if (!adminEmail) {
-    console.warn("⚠️ ADMIN_EMAIL not set in environment variables. Using default 'admin@example.com'.");
-  }
-
-  const targetEmail = adminEmail || "admin@example.com";
-
-  // Get admin user for import
-  const existingUser = await db.query.user.findFirst({
-    where: (user, { eq }) => eq(user.email, targetEmail),
-  });
-
-  if (!existingUser) {
-    console.error(`❌ Admin user '${targetEmail}' not found in database.`);
-    console.error("👉 Please ensure you have run the seed script (bun run db:seed) or configured .env correctly.");
+    console.error("❌ ADMIN_EMAIL environment variable is required.");
+    console.error("   Set ADMIN_EMAIL to specify the user who will own the imported project.");
     process.exit(1);
   }
 
-  console.log(`👤 Using admin user: ${existingUser.name} (${existingUser.email})`);
+  // Get admin user for import
+  const existingUser = await db.query.user.findFirst({
+    where: (user, { eq }) => eq(user.email, adminEmail),
+  });
+
+  if (!existingUser) {
+    console.error(`❌ User '${adminEmail}' not found in database.`);
+    console.error("   Ensure this user account exists before running the import.");
+    process.exit(1);
+  }
+
+  console.log(`👤 Using user: ${existingUser.name} (${existingUser.email})`);
 
   // Create project
   console.log("📁 Creating project...");

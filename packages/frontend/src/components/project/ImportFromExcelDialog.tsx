@@ -4,7 +4,7 @@ import { X, Upload, FileSpreadsheet, AlertCircle, CheckCircle, ChevronRight, Che
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ImportData, ImportPlugin, ImportPreviewResponse } from "@register-manager/shared";
-import initWasm, { parse_excel as parse_excel_static } from "../../utils/wasm_parser";
+import initWasm, { parse_excel as parse_excel_static } from "../../lib/wasm_parser";
 
 interface ImportFromExcelDialogProps {
   onClose: () => void;
