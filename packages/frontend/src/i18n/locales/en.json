@@ -37,7 +37,9 @@
         "settings_desc": "Configure global properties",
         "subtitle": "Register Manager",
         "export": "Export",
-        "no_desc_short": "No description"
+        "no_desc_short": "No description",
+        "create_snapshot": "Create Snapshot",
+        "snapshot_desc": "Save current project state"
     },
     "dashboard": {
         "title": "Projects",
@@ -289,6 +291,40 @@
             "submit_save": "Save Changes",
             "saving": "Saving...",
             "save_failed": "Failed to update field"
+        },
+        "create_dialog": {
+            "title": "Create New Project",
+            "project_name": "Project Name",
+            "display_name": "Display Name",
+            "description": "Description",
+            "vlnv_identifier": "VLNV Identifier (Vendor:Library:Name:Version)",
+            "vendor": "Vendor",
+            "library": "Library",
+            "version": "Version",
+            "full_vlnv": "Full VLNV",
+            "cancel": "Cancel",
+            "create": "Create Project",
+            "creating": "Creating...",
+            "errors": {
+                "name_required": "Name is required",
+                "name_invalid": "Name must be a valid identifier (letters, numbers, underscore)",
+                "vendor_required": "Vendor is required",
+                "library_required": "Library is required",
+                "version_required": "Version is required",
+                "submit_failed": "Failed to create project. Please try again."
+            },
+            "hints": {
+                "name_identifier": "Used as identifier. Only letters, numbers, and underscores.",
+                "display_name_optional": "Human-readable name (optional)"
+            },
+            "placeholders": {
+                "project_name": "e.g., uart_controller",
+                "display_name": "e.g., UART Controller",
+                "description": "Describe your project...",
+                "vendor": "mycompany",
+                "library": "ip",
+                "version": "1.0"
+            }
         }
     },
     "versions": {
@@ -323,5 +359,53 @@
         "unknown_user": "Unknown User",
         "loading": "Loading versions...",
         "error_load": "Error loading versions"
+    },
+    "layout": {
+        "project_structure": "Project Structure"
+    },
+    "property": {
+        "title": "Properties",
+        "entity_types": {
+            "project": "Project",
+            "register": "Register",
+            "field": "Field"
+        },
+        "basic_info": "Basic Information",
+        "vlnv": "VLNV Identifier",
+        "register_config": "Register Configuration",
+        "field_config": "Field Configuration",
+        "metadata": "Metadata",
+        "labels": {
+            "name": "Name",
+            "display_name": "Display Name",
+            "description": "Description",
+            "vendor": "Vendor",
+            "library": "Library",
+            "version": "Version",
+            "address_offset": "Address Offset",
+            "size": "Size (bits)",
+            "volatile": "Volatile",
+            "type_identifier": "Type Identifier",
+            "bit_offset": "Bit Offset",
+            "bit_width": "Bit Width",
+            "bit_range": "Bit Range",
+            "id": "ID",
+            "created": "Created",
+            "updated": "Updated"
+        },
+        "placeholders": {
+            "optional": "Optional",
+            "description": "Describe the purpose...",
+            "hex": "0x00"
+        },
+        "actions": {
+            "reset": "Reset",
+            "save": "Save",
+            "cancel": "Cancel",
+            "save_changes": "Save Changes",
+            "unsaved_changes": "Unsaved changes"
+        },
+        "empty_state": "Select an item to view its properties",
+        "hex_hint": "Hex format (e.g., 0x00, 0x04)"
     }
 }

@@ -23,7 +23,6 @@ export function ProjectVersions() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const [isCreateOpen, setCreateOpen] = useState(false);
   const [versionToRestore, setVersionToRestore] = useState<ProjectVersion | null>(null);
 
   // API Client
@@ -53,20 +52,7 @@ export function ProjectVersions() {
   });
 
   // Mutations
-  const createMutation = useMutation({
-    mutationFn: async (data: { version: string; description: string }) => {
-      const res = await fetchWithAuth(`/api/projects/versions/${id}`, {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to create version");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project-versions", id] });
-      setCreateOpen(false);
-    },
-  });
+
 
   const restoreMutation = useMutation({
     mutationFn: async (versionId: string) => {
@@ -84,13 +70,7 @@ export function ProjectVersions() {
     },
   });
 
-  // Form for create
-  const { register, handleSubmit, reset } = useForm<{ version: string; description: string }>();
 
-  const onSubmitCreate = (data: { version: string; description: string }) => {
-    createMutation.mutate(data);
-    reset();
-  };
 
   if (isLoading) return <div className="p-8 text-center text-surface-400">{t("versions.loading")}</div>;
   if (error) return <div className="p-8 text-center text-red-400">{t("versions.error_load")}</div>;
@@ -116,13 +96,6 @@ export function ProjectVersions() {
           </div>
           <h1 className="text-lg font-semibold text-surface-100">{t("versions.title")}</h1>
         </div>
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors text-sm font-medium"
-        >
-          <Plus className="w-4 h-4" />
-          {t("versions.create")}
-        </button>
       </div>
 
       {/* Content */}
@@ -180,52 +153,7 @@ export function ProjectVersions() {
         </div>
       </div>
 
-      {/* Create Modal */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-surface-900 border border-surface-700 rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div className="px-6 py-4 border-b border-surface-800 flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-surface-100">{t("versions.create_modal.title")}</h3>
-              <button onClick={() => setCreateOpen(false)} className="text-surface-400 hover:text-white">✕</button>
-            </div>
-            <form onSubmit={handleSubmit(onSubmitCreate)} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-surface-300 uppercase tracking-wider">{t("versions.name")}</label>
-                <input
-                  {...register("version", { required: true })}
-                  className="w-full bg-surface-950 border border-surface-700 rounded-lg px-3 py-2 text-surface-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
-                  placeholder={t("versions.create_modal.name_placeholder")}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-surface-300 uppercase tracking-wider">{t("versions.description")}</label>
-                <textarea
-                  {...register("description")}
-                  className="w-full bg-surface-950 border border-surface-700 rounded-lg px-3 py-2 text-surface-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all min-h-[80px]"
-                  placeholder={t("versions.create_modal.desc_placeholder")}
-                />
-              </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setCreateOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm text-surface-300 hover:bg-surface-800 transition-colors"
-                >
-                  {t("versions.create_modal.cancel")}
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-primary-600 text-white hover:bg-primary-500 transition-colors disabled:opacity-50"
-                >
-                  {createMutation.isPending ? t("versions.create_modal.creating") : t("versions.create_modal.submit")}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { useRegisterStore } from "../../stores/registerStore";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface ProjectDialogProps {
   onClose: () => void;
 }
 
 export function ProjectDialog({ onClose }: ProjectDialogProps) {
+  const { t } = useTranslation();
   const createProject = useRegisterStore((state) => state.createProject);
   const isLoading = useRegisterStore((state) => state.isLoading);
   const navigate = useNavigate();
@@ -27,21 +29,21 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("project.create_dialog.errors.name_required");
     } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(formData.name)) {
-      newErrors.name = "Name must be a valid identifier (letters, numbers, underscore)";
+      newErrors.name = t("project.create_dialog.errors.name_invalid");
     }
 
     if (!formData.vendor) {
-      newErrors.vendor = "Vendor is required";
+      newErrors.vendor = t("project.create_dialog.errors.vendor_required");
     }
 
     if (!formData.library) {
-      newErrors.library = "Library is required";
+      newErrors.library = t("project.create_dialog.errors.library_required");
     }
 
     if (!formData.version) {
-      newErrors.version = "Version is required";
+      newErrors.version = t("project.create_dialog.errors.version_required");
     }
 
     setErrors(newErrors);
@@ -70,7 +72,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
       onClose();
     } catch (error) {
       console.error("Failed to create project:", error);
-      setErrors({ submit: "Failed to create project. Please try again." });
+      setErrors({ submit: t("project.create_dialog.errors.submit_failed") });
     }
   };
 
@@ -79,7 +81,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
       <div className="bg-surface-900 border border-surface-700 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-surface-700">
-          <h2 className="text-lg font-semibold text-surface-100">Create New Project</h2>
+          <h2 className="text-lg font-semibold text-surface-100">{t("project.create_dialog.title")}</h2>
           <button onClick={onClose} className="btn-ghost p-2" disabled={isLoading}>
             <X className="w-4 h-4" />
           </button>
@@ -90,49 +92,49 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Project Name <span className="text-red-400">*</span>
+              {t("project.create_dialog.project_name")} <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="input"
-              placeholder="e.g., uart_controller"
+              placeholder={t("project.create_dialog.placeholders.project_name")}
               disabled={isLoading}
               autoFocus
             />
             {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
             <p className="text-xs text-surface-500 mt-1">
-              Used as identifier. Only letters, numbers, and underscores.
+              {t("project.create_dialog.hints.name_identifier")}
             </p>
           </div>
 
           {/* Display Name */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Display Name
+              {t("project.create_dialog.display_name")}
             </label>
             <input
               type="text"
               value={formData.displayName}
               onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
               className="input"
-              placeholder="e.g., UART Controller"
+              placeholder={t("project.create_dialog.placeholders.display_name")}
               disabled={isLoading}
             />
-            <p className="text-xs text-surface-500 mt-1">Human-readable name (optional)</p>
+            <p className="text-xs text-surface-500 mt-1">{t("project.create_dialog.hints.display_name_optional")}</p>
           </div>
 
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              Description
+              {t("project.create_dialog.description")}
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="input min-h-[80px]"
-              placeholder="Describe your project..."
+              placeholder={t("project.create_dialog.placeholders.description")}
               disabled={isLoading}
             />
           </div>
@@ -140,20 +142,20 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
           {/* VLNV */}
           <div className="border-t border-surface-700 pt-4">
             <h3 className="text-sm font-medium text-surface-300 mb-3">
-              VLNV Identifier (Vendor:Library:Name:Version)
+              {t("project.create_dialog.vlnv_identifier")}
             </h3>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Vendor <span className="text-red-400">*</span>
+                  {t("project.create_dialog.vendor")} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.vendor}
                   onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
                   className="input text-sm"
-                  placeholder="mycompany"
+                  placeholder={t("project.create_dialog.placeholders.vendor")}
                   disabled={isLoading}
                 />
                 {errors.vendor && <p className="text-xs text-red-400 mt-1">{errors.vendor}</p>}
@@ -161,14 +163,14 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
 
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Library <span className="text-red-400">*</span>
+                  {t("project.create_dialog.library")} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.library}
                   onChange={(e) => setFormData({ ...formData, library: e.target.value })}
                   className="input text-sm"
-                  placeholder="ip"
+                  placeholder={t("project.create_dialog.placeholders.library")}
                   disabled={isLoading}
                 />
                 {errors.library && <p className="text-xs text-red-400 mt-1">{errors.library}</p>}
@@ -176,14 +178,14 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
 
               <div className="col-span-2">
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Version <span className="text-red-400">*</span>
+                  {t("project.create_dialog.version")} <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.version}
                   onChange={(e) => setFormData({ ...formData, version: e.target.value })}
                   className="input text-sm"
-                  placeholder="1.0"
+                  placeholder={t("project.create_dialog.placeholders.version")}
                   disabled={isLoading}
                 />
                 {errors.version && <p className="text-xs text-red-400 mt-1">{errors.version}</p>}
@@ -191,7 +193,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
             </div>
 
             <div className="mt-3 p-3 bg-surface-800 rounded border border-surface-700">
-              <div className="text-xs text-surface-400 mb-1">Full VLNV</div>
+              <div className="text-xs text-surface-400 mb-1">{t("project.create_dialog.full_vlnv")}</div>
               <div className="font-mono text-sm text-primary-400">
                 {formData.vendor || "vendor"}:{formData.library || "library"}:
                 {formData.name || "name"}:{formData.version || "version"}
@@ -209,10 +211,10 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
         {/* Footer */}
         <div className="flex items-center justify-end gap-2 p-4 border-t border-surface-700">
           <button type="button" onClick={onClose} className="btn-secondary" disabled={isLoading}>
-            Cancel
+            {t("project.create_dialog.cancel")}
           </button>
           <button onClick={handleSubmit} className="btn-primary" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Project"}
+            {isLoading ? t("project.create_dialog.creating") : t("project.create_dialog.create")}
           </button>
         </div>
       </div>

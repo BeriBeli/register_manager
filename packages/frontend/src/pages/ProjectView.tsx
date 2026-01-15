@@ -11,11 +11,12 @@ import { ExportDialog } from "../components/export/ExportDialog";
 import { CreateAddressBlockDialog } from "../components/project/CreateAddressBlockDialog";
 import { AddressBlockDialog } from "../components/project/AddressBlockDialog";
 import { useRegisterStore } from "../stores/registerStore";
-import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight } from "lucide-react";
+import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight, History as HistoryIcon, Save } from "lucide-react";
 import type { Field, Register, AddressBlock } from "@register-manager/shared";
 import { parseNumber } from "@register-manager/shared";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
+import { CreateVersionDialog } from "../components/version/CreateVersionDialog";
 
 export function ProjectView() {
   const { t } = useTranslation();
@@ -29,6 +30,7 @@ export function ProjectView() {
   const setSelectedRegister = useRegisterStore((state) => state.setSelectedRegister);
   const selectedAddressBlockId = useRegisterStore((state) => state.selectedAddressBlockId);
   const setSelectedAddressBlockId = useRegisterStore((state) => state.setSelectedAddressBlockId);
+  const selectedMemoryMapId = useRegisterStore((state) => state.selectedMemoryMapId);
   const setSelectedMemoryMapId = useRegisterStore((state) => state.setSelectedMemoryMapId);
   const error = useRegisterStore((state) => state.error);
 
@@ -49,6 +51,7 @@ export function ProjectView() {
   const [selectedRegisterId, setSelectedRegisterId] = useState<string | null>(null);
   const [showPropertyPanel, setShowPropertyPanel] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showCreateVersionDialog, setShowCreateVersionDialog] = useState(false);
 
   // New state for Address Block Editing
   const [editingAddressBlock, setEditingAddressBlock] = useState<AddressBlock | null>(null);
@@ -56,7 +59,7 @@ export function ProjectView() {
   const [targetMemoryMapId, setTargetMemoryMapId] = useState<string | null>(null);
 
   // Determine active address block and registers (Moved up to be available for handlers)
-  const activeMemoryMap = currentProject?.memoryMaps?.find(mm => mm.id === useRegisterStore.getState().selectedMemoryMapId);
+  const activeMemoryMap = currentProject?.memoryMaps?.find(mm => mm.id === selectedMemoryMapId);
   const allAddressBlocks = currentProject?.memoryMaps?.flatMap(mm => mm.addressBlocks || []) || [];
   const currentAddressBlock = allAddressBlocks.find(ab => ab.id === selectedAddressBlockId);
   const registers = currentAddressBlock?.registers || [];
@@ -261,11 +264,11 @@ export function ProjectView() {
     // 2. Address Block View (Registers List)
     if (currentAddressBlock) {
       return (
-        <div className="flex-1 overflow-hidden flex flex-col animate-in fade-in duration-300">
-          <div className="flex items-center justify-between mb-6">
+        <div className="overflow-hidden card bg-surface-900 flex flex-col max-h-full">
+          <div className="p-4 border-b border-surface-700 flex items-center justify-between shrink-0">
             <div>
-              <h2 className="text-xl font-medium text-surface-100">{t("project_view.registers_title")}</h2>
-              <p className="text-surface-400 text-sm mt-1">{t("project_view.registers_desc", { name: currentAddressBlock.name })}</p>
+              <h2 className="font-medium text-surface-200">{t("project_view.registers_title")}</h2>
+              <p className="text-surface-400 text-xs mt-0.5">{t("project_view.registers_desc", { name: currentAddressBlock.name })}</p>
             </div>
             <button
               onClick={() => {
@@ -279,86 +282,80 @@ export function ProjectView() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-hidden rounded-xl border border-surface-700/50 shadow-sm bg-surface-800/20">
-            {registers.length > 0 ? (
-              <div className="h-full overflow-auto">
-                <RegisterTable
-                  registers={registers}
-                  onSelect={(reg) => {
-                    setSelectedRegister(reg);
-                  }}
-                  onEdit={handleEditRegister}
-                  onDelete={handleDeleteRegister}
-                />
+          {registers.length > 0 ? (
+            <div className="overflow-auto">
+              <RegisterTable
+                registers={registers}
+                onSelect={(reg) => {
+                  setSelectedRegister(reg);
+                }}
+                onEdit={handleEditRegister}
+                onDelete={handleDeleteRegister}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
+              <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
+                <SettingsIcon className="w-8 h-8 opacity-50" />
               </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
-                <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
-                  <SettingsIcon className="w-8 h-8 opacity-50" />
-                </div>
-                <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_registers_title")}</h3>
-                <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_registers_desc")}</p>
-                <button onClick={() => {
-                  setCurrentAddressBlockId(currentAddressBlock.id);
-                  setShowRegisterDialog(true);
-                }} className="btn-primary">
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t("project_view.create_first_register")}
-                </button>
-              </div>
-            )}
-          </div>
+              <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_registers_title")}</h3>
+              <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_registers_desc")}</p>
+              <button onClick={() => {
+                setCurrentAddressBlockId(currentAddressBlock.id);
+                setShowRegisterDialog(true);
+              }} className="btn-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                {t("project_view.create_first_register")}
+              </button>
+            </div>
+          )}
         </div>
       );
     }
 
     // 3. Memory Map View (Address Blocks List)
     if (activeMemoryMap) {
-      return (
-        <div className="flex-1 overflow-hidden flex flex-col animate-in fade-in duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-medium text-surface-100">{t("project_view.blocks_title")}</h2>
-              <p className="text-surface-400 text-sm mt-1">{t("project_view.blocks_desc", { name: activeMemoryMap.name })}</p>
+      return <div className="overflow-hidden card bg-surface-900 flex flex-col max-h-full">
+        <div className="p-4 border-b border-surface-700 flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="font-medium text-surface-200">{t("project_view.blocks_title")}</h2>
+            <p className="text-surface-400 text-xs mt-0.5">{t("project_view.blocks_desc", { name: activeMemoryMap.name })}</p>
+          </div>
+          <button
+            onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
+            className="btn-primary shadow-lg shadow-primary-500/20"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t("project_view.add_block")}
+          </button>
+        </div>
+
+        {activeMemoryMap.addressBlocks && activeMemoryMap.addressBlocks.length > 0 ? (
+          <div className="overflow-auto">
+            <AddressBlockTable
+              addressBlocks={activeMemoryMap.addressBlocks}
+              onSelect={(block) => setSelectedAddressBlockId(block.id)}
+              onEdit={handleEditAddressBlock}
+              onDelete={handleDeleteAddressBlock}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
+            <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
+              <SettingsIcon className="w-8 h-8 opacity-50" />
             </div>
+            <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_blocks_title")}</h3>
+            <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_blocks_desc")}</p>
             <button
               onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
-              className="btn-primary shadow-lg shadow-primary-500/20"
+              className="btn-primary"
             >
               <Plus className="w-4 h-4 mr-2" />
-              {t("project_view.add_block")}
+              {t("project_view.create_first_block")}
             </button>
           </div>
-
-          <div className="flex-1 overflow-hidden rounded-xl border border-surface-700/50 shadow-sm bg-surface-800/20">
-            {activeMemoryMap.addressBlocks && activeMemoryMap.addressBlocks.length > 0 ? (
-              <div className="h-full overflow-auto">
-                <AddressBlockTable
-                  addressBlocks={activeMemoryMap.addressBlocks}
-                  onSelect={(block) => setSelectedAddressBlockId(block.id)}
-                  onEdit={handleEditAddressBlock}
-                  onDelete={handleDeleteAddressBlock}
-                />
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
-                <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
-                  <SettingsIcon className="w-8 h-8 opacity-50" />
-                </div>
-                <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_blocks_title")}</h3>
-                <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_blocks_desc")}</p>
-                <button
-                  onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
-                  className="btn-primary"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t("project_view.create_first_block")}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      );
+        )}
+      </div>
     }
 
     // 4. Project Root View
@@ -390,6 +387,18 @@ export function ProjectView() {
             <div className="card p-8 border-surface-700/50 shadow-sm">
               <h3 className="text-xl font-medium text-surface-100 mb-6">{t("project_view.quick_actions")}</h3>
               <div className="grid grid-cols-1 gap-4">
+                <button
+                  className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
+                  onClick={() => setShowCreateVersionDialog(true)}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-surface-900 flex items-center justify-center text-primary-400 group-hover:text-primary-300">
+                    <Save className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{t("project_view.create_snapshot")}</div>
+                    <div className="text-sm text-surface-400 mt-0.5">{t("project_view.snapshot_desc")}</div>
+                  </div>
+                </button>
                 <button
                   className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
                   onClick={() => setShowExportDialog(true)}
@@ -460,6 +469,14 @@ export function ProjectView() {
             <SettingsIcon className="w-5 h-5" />
           </button>
           <button
+            onClick={() => setShowCreateVersionDialog(true)}
+            className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200"
+            title={t("versions.create")}
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {t("versions.create")}
+          </button>
+          <button
             onClick={() => setShowExportDialog(true)}
             className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200"
           >
@@ -524,6 +541,16 @@ export function ProjectView() {
           projectId={currentProject.id}
           projectName={currentProject.name}
           onClose={() => setShowExportDialog(false)}
+        />
+      )}
+
+      {showCreateVersionDialog && (
+        <CreateVersionDialog
+          projectId={currentProject.id}
+          onClose={() => setShowCreateVersionDialog(false)}
+          onSuccess={() => {
+            // Optional: Show success notification
+          }}
         />
       )}
 

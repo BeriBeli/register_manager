@@ -3,6 +3,7 @@ import { ChevronRight, ChevronDown, Map, Box, Cpu } from "lucide-react";
 import { useRegisterStore } from "../../stores/registerStore";
 import { clsx } from "clsx";
 import type { MemoryMap, AddressBlock, Register } from "@register-manager/shared";
+import { useTranslation } from "react-i18next";
 
 interface TreeNodeProps {
   label: string;
@@ -62,6 +63,7 @@ function TreeNode({
 }
 
 export function ProjectTree() {
+  const { t } = useTranslation();
   const currentProject = useRegisterStore((state) => state.currentProject);
   const selectedMemoryMapId = useRegisterStore((state) => state.selectedMemoryMapId);
   const selectedAddressBlockId = useRegisterStore((state) => state.selectedAddressBlockId);
@@ -125,7 +127,7 @@ export function ProjectTree() {
   return (
     <div className="flex-1 overflow-y-auto px-2 py-2">
       <div className="text-xs font-semibold text-surface-500 px-2 py-2 mb-2 uppercase tracking-wider">
-        Project Structure
+        {t("layout.project_structure")}
       </div>
 
       {currentProject.memoryMaps?.map((mm) => (

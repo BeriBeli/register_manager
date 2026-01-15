@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Save, X } from "lucide-react";
 import type { Project, Register, Field } from "@register-manager/shared";
 import { useRegisterStore } from "../../stores/registerStore";
+import { useTranslation } from "react-i18next";
 
 type EditableEntity = Project | Register | Field | null;
 type EntityType = "project" | "register" | "field" | null;
@@ -13,8 +14,10 @@ interface PropertyPanelProps {
 }
 
 export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProps) {
+  const { t } = useTranslation();
   const updateRegister = useRegisterStore((state) => state.updateRegister);
   const updateField = useRegisterStore((state) => state.updateField);
+  const updateProject = useRegisterStore((state) => state.updateProject);
   const isLoading = useRegisterStore((state) => state.isLoading);
 
   const [formData, setFormData] = useState<any>(entity || {});
@@ -33,6 +36,13 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
         await updateRegister(entity.id, formData);
       } else if (entityType === "field") {
         await updateField(entity.id, formData);
+      } else if (entityType === "project") {
+        // Sanitize data to avoid Zod validation errors with null values
+        const sanitizedData = { ...formData };
+        if (sanitizedData.description === null) sanitizedData.description = undefined;
+        if (sanitizedData.displayName === null) sanitizedData.displayName = undefined;
+
+        await updateProject(entity.id, sanitizedData);
       }
       setIsDirty(false);
     } catch (error) {
@@ -49,7 +59,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
     return (
       <div className="h-full flex items-center justify-center p-8">
         <div className="text-center text-surface-500">
-          <p>Select an item to view its properties</p>
+          <p>{t('property.empty_state')}</p>
         </div>
       </div>
     );
@@ -60,23 +70,13 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-surface-700">
         <div>
-          <h3 className="text-lg font-medium text-surface-100">Properties</h3>
+          <h3 className="text-lg font-medium text-surface-100">{t('property.title')}</h3>
           <p className="text-xs text-surface-500 mt-1">
-            {entityType.charAt(0).toUpperCase() + entityType.slice(1)}
+            {t(`property.entity_types.${entityType}`)}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {isDirty && (
-            <>
-              <button onClick={handleReset} className="btn-ghost text-xs" disabled={isLoading}>
-                Reset
-              </button>
-              <button onClick={handleSave} className="btn-primary text-xs" disabled={isLoading}>
-                <Save className="w-3 h-3" />
-                Save
-              </button>
-            </>
-          )}
+
           {onClose && (
             <button onClick={onClose} className="btn-ghost p-2">
               <X className="w-4 h-4" />
@@ -89,41 +89,41 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Common Properties */}
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-surface-300">Basic Information</h4>
+          <h4 className="text-sm font-medium text-surface-300">{t('property.basic_info')}</h4>
 
           <div>
-            <label className="block text-xs font-medium text-surface-400 mb-1">Name</label>
+            <label className="block text-xs font-medium text-surface-400 mb-1">{t('property.labels.name')}</label>
             <input
               type="text"
               value={formData.name || ""}
               onChange={(e) => handleChange("name", e.target.value)}
               className="input text-sm"
-              disabled={entityType === "project"}
+              disabled={false}
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-surface-400 mb-1">
-              Display Name
+              {t('property.labels.display_name')}
             </label>
             <input
               type="text"
               value={formData.displayName || ""}
               onChange={(e) => handleChange("displayName", e.target.value)}
               className="input text-sm"
-              placeholder="Optional"
+              placeholder={t('property.placeholders.optional')}
             />
           </div>
 
           <div>
             <label className="block text-xs font-medium text-surface-400 mb-1">
-              Description
+              {t('property.labels.description')}
             </label>
             <textarea
               value={formData.description || ""}
               onChange={(e) => handleChange("description", e.target.value)}
               className="input text-sm min-h-[80px]"
-              placeholder="Describe the purpose..."
+              placeholder={t('property.placeholders.description')}
             />
           </div>
         </div>
@@ -131,12 +131,12 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
         {/* Project-specific Properties */}
         {entityType === "project" && (
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-surface-300">VLNV Identifier</h4>
+            <h4 className="text-sm font-medium text-surface-300">{t('property.vlnv')}</h4>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Vendor
+                  {t('property.labels.vendor')}
                 </label>
                 <input
                   type="text"
@@ -151,7 +151,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
 
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Library
+                  {t('property.labels.library')}
                 </label>
                 <input
                   type="text"
@@ -166,7 +166,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
 
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Version
+                  {t('property.labels.version')}
                 </label>
                 <input
                   type="text"
@@ -185,11 +185,11 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
         {/* Register-specific Properties */}
         {entityType === "register" && (
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-surface-300">Register Configuration</h4>
+            <h4 className="text-sm font-medium text-surface-300">{t('property.register_config')}</h4>
 
             <div>
               <label className="block text-xs font-medium text-surface-400 mb-1">
-                Address Offset
+                {t('property.labels.address_offset')}
               </label>
               <input
                 type="text"
@@ -198,12 +198,12 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 className="input text-sm font-mono"
                 placeholder="0x00"
               />
-              <p className="text-xs text-surface-500 mt-1">Hex format (e.g., 0x00, 0x04)</p>
+              <p className="text-xs text-surface-500 mt-1">{t('property.hex_hint')}</p>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-surface-400 mb-1">
-                Size (bits)
+                {t('property.labels.size')}
               </label>
               <select
                 value={formData.size || 32}
@@ -227,20 +227,20 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-primary-600"
               />
               <label htmlFor="register-volatile" className="text-sm text-surface-300">
-                Volatile
+                {t('property.labels.volatile')}
               </label>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-surface-400 mb-1">
-                Type Identifier
+                {t('property.labels.type_identifier')}
               </label>
               <input
                 type="text"
                 value={formData.typeIdentifier || ""}
                 onChange={(e) => handleChange("typeIdentifier", e.target.value)}
                 className="input text-sm"
-                placeholder="Optional"
+                placeholder={t('property.placeholders.optional')}
               />
             </div>
           </div>
@@ -249,12 +249,12 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
         {/* Field-specific Properties */}
         {entityType === "field" && (
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-surface-300">Field Configuration</h4>
+            <h4 className="text-sm font-medium text-surface-300">{t('property.field_config')}</h4>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Bit Offset
+                  {t('property.labels.bit_offset')}
                 </label>
                 <input
                   type="number"
@@ -267,7 +267,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
 
               <div>
                 <label className="block text-xs font-medium text-surface-400 mb-1">
-                  Bit Width
+                  {t('property.labels.bit_width')}
                 </label>
                 <input
                   type="number"
@@ -280,7 +280,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
             </div>
 
             <div className="p-3 bg-surface-800 rounded border border-surface-700">
-              <div className="text-xs text-surface-400 mb-1">Bit Range</div>
+              <div className="text-xs text-surface-400 mb-1">{t('property.labels.bit_range')}</div>
               <div className="font-mono text-primary-400">
                 [{(formData.bitOffset ?? 0) + (formData.bitWidth ?? 1) - 1}:
                 {formData.bitOffset ?? 0}]
@@ -296,20 +296,20 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-primary-600"
               />
               <label htmlFor="field-volatile" className="text-sm text-surface-300">
-                Volatile
+                {t('property.labels.volatile')}
               </label>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-surface-400 mb-1">
-                Type Identifier
+                {t('property.labels.type_identifier')}
               </label>
               <input
                 type="text"
                 value={formData.typeIdentifier || ""}
                 onChange={(e) => handleChange("typeIdentifier", e.target.value)}
                 className="input text-sm"
-                placeholder="Optional"
+                placeholder={t('property.placeholders.optional')}
               />
             </div>
           </div>
@@ -317,21 +317,21 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
 
         {/* Metadata */}
         <div className="space-y-2 pt-4 border-t border-surface-700">
-          <h4 className="text-xs font-medium text-surface-500">Metadata</h4>
+          <h4 className="text-xs font-medium text-surface-500">{t('property.metadata')}</h4>
           <div className="text-xs text-surface-500 space-y-1">
             <div className="flex justify-between">
-              <span>ID:</span>
+              <span>{t('property.labels.id')}:</span>
               <span className="font-mono">{entity.id}</span>
             </div>
             {(entity as any).createdAt && (
               <div className="flex justify-between">
-                <span>Created:</span>
+                <span>{t('property.labels.created')}:</span>
                 <span>{new Date((entity as any).createdAt).toLocaleString()}</span>
               </div>
             )}
             {(entity as any).updatedAt && (
               <div className="flex justify-between">
-                <span>Updated:</span>
+                <span>{t('property.labels.updated')}:</span>
                 <span>{new Date((entity as any).updatedAt).toLocaleString()}</span>
               </div>
             )}
@@ -343,14 +343,14 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
       {isDirty && (
         <div className="p-4 border-t border-surface-700 bg-surface-900/50">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-surface-400">Unsaved changes</span>
+            <span className="text-xs text-surface-400">{t('property.actions.unsaved_changes')}</span>
             <div className="flex items-center gap-2">
               <button onClick={handleReset} className="btn-secondary text-sm" disabled={isLoading}>
-                Cancel
+                {t('property.actions.cancel')}
               </button>
               <button onClick={handleSave} className="btn-primary text-sm" disabled={isLoading}>
                 <Save className="w-4 h-4" />
-                Save Changes
+                {t('property.actions.save_changes')}
               </button>
             </div>
           </div>

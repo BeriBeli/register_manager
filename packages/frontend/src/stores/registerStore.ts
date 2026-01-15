@@ -13,6 +13,7 @@ import type {
   CreateFieldInput,
   UpdateRegisterInput,
   UpdateFieldInput,
+  UpdateProjectInput,
 } from "@register-manager/shared";
 
 interface RegisterStore {
@@ -30,6 +31,7 @@ interface RegisterStore {
   fetchProjects: () => Promise<void>;
   fetchProject: (id: string) => Promise<void>;
   createProject: (data: CreateProjectInput) => Promise<void>;
+  updateProject: (id: string, data: UpdateProjectInput) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   setCurrentProject: (project: Project | null) => void;
   setSelectedAddressBlockId: (id: string | null) => void;
@@ -153,6 +155,33 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
         currentProject: newProject,
         isLoading: false
       });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  updateProject: async (id: string, data: UpdateProjectInput) => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch(`/api/projects/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error || "Failed to update project");
+      }
+      const updatedProject = json.data;
+
+      // Refresh the projects list
+      await get().fetchProjects();
+
+      set((state) => ({
+        currentProject: state.currentProject?.id === id ? updatedProject : state.currentProject,
+        isLoading: false
+      }));
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }

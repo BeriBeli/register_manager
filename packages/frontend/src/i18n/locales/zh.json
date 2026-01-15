@@ -37,7 +37,9 @@
         "settings_desc": "配置全局属性",
         "subtitle": "寄存器管理器",
         "export": "导出",
-        "no_desc_short": "无描述"
+        "no_desc_short": "无描述",
+        "create_snapshot": "创建快照",
+        "snapshot_desc": "保存当前状态"
     },
     "dashboard": {
         "title": "项目",
@@ -289,6 +291,40 @@
             "submit_save": "保存更改",
             "saving": "保存中...",
             "save_failed": "更新字段失败"
+        },
+        "create_dialog": {
+            "title": "创建新项目",
+            "project_name": "项目名称",
+            "display_name": "显示名称",
+            "description": "描述",
+            "vlnv_identifier": "VLNV 标识符 (Vendor:Library:Name:Version)",
+            "vendor": "供应商",
+            "library": "库",
+            "version": "版本",
+            "full_vlnv": "完整 VLNV",
+            "cancel": "取消",
+            "create": "创建项目",
+            "creating": "创建中...",
+            "errors": {
+                "name_required": "名称必填",
+                "name_invalid": "名称必须是有效的标识符（字母、数字、下划线）",
+                "vendor_required": "供应商必填",
+                "library_required": "库必填",
+                "version_required": "版本必填",
+                "submit_failed": "创建项目失败，请重试。"
+            },
+            "hints": {
+                "name_identifier": "作为标识符使用。仅限字母、数字及下划线。",
+                "display_name_optional": "显示名称 (可选)"
+            },
+            "placeholders": {
+                "project_name": "例如：uart_controller",
+                "display_name": "例如：UART 控制器",
+                "description": "描述您的项目...",
+                "vendor": "mycompany",
+                "library": "ip",
+                "version": "1.0"
+            }
         }
     },
     "versions": {
@@ -323,5 +359,53 @@
         "unknown_user": "未知用户",
         "loading": "加载版本中...",
         "error_load": "加载版本失败"
+    },
+    "layout": {
+        "project_structure": "项目结构"
+    },
+    "property": {
+        "title": "属性",
+        "entity_types": {
+            "project": "项目",
+            "register": "寄存器",
+            "field": "字段"
+        },
+        "basic_info": "基本信息",
+        "vlnv": "VLNV 标识符",
+        "register_config": "寄存器配置",
+        "field_config": "字段配置",
+        "metadata": "元数据",
+        "labels": {
+            "name": "名称",
+            "display_name": "显示名称",
+            "description": "描述",
+            "vendor": "供应商",
+            "library": "库",
+            "version": "版本",
+            "address_offset": "地址偏移",
+            "size": "大小 (位)",
+            "volatile": "易失性",
+            "type_identifier": "类型标识符",
+            "bit_offset": "位偏移",
+            "bit_width": "位宽",
+            "bit_range": "位范围",
+            "id": "ID",
+            "created": "创建时间",
+            "updated": "更新时间"
+        },
+        "placeholders": {
+            "optional": "可选",
+            "description": "描述用途...",
+            "hex": "0x00"
+        },
+        "actions": {
+            "reset": "重置",
+            "save": "保存",
+            "cancel": "取消",
+            "save_changes": "保存更改",
+            "unsaved_changes": "未保存的更改"
+        },
+        "empty_state": "选择一个项目以查看其属性",
+        "hex_hint": "十六进制格式 (例如 0x00, 0x04)"
     }
 }
