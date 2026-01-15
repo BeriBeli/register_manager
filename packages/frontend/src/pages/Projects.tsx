@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../stores/registerStore";
 import { ProjectDialog } from "../components/project/ProjectDialog";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
+import { useSession } from "../lib/auth-client";
 
 interface Project {
   id: string;
@@ -29,6 +30,7 @@ export function Projects() {
   const deleteProject = useRegisterStore((state) => state.deleteProject);
   const [showProjectDialog, setShowProjectDialog] = useState(false);
   const navigate = useNavigate();
+  const { data: session } = useSession();
 
   // Delete State
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
@@ -153,17 +155,19 @@ export function Projects() {
                           </div>
                         </div>
 
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleDeleteClick(project);
-                          }}
-                          className="p-2 text-surface-500 hover:text-red-400 hover:bg-surface-700/50 rounded transition-colors z-10"
-                          title={t('common.delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {session?.user?.id === project.userId && (
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDeleteClick(project);
+                            }}
+                            className="p-2 text-surface-500 hover:text-red-400 hover:bg-surface-700/50 rounded transition-colors z-10"
+                            title={t('common.delete')}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
 
                         <ChevronRight className="w-4 h-4 text-surface-500 group-hover:text-surface-300 transition-colors" />
                       </div>

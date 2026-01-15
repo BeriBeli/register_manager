@@ -91,6 +91,47 @@ export function ProjectMembers({ projectId }: { projectId: string }) {
 
         {/* Member List */}
         <div className="space-y-2">
+          {/* Owner Display */}
+          {currentProject?.user && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-surface-800/50 border border-surface-700/50">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-surface-700 flex items-center justify-center text-surface-300 overflow-hidden">
+                  {currentProject.user.image ? (
+                    <img
+                      src={currentProject.user.image}
+                      alt={currentProject.user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs font-bold">
+                      {currentProject.user.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-surface-200">
+                    {currentProject.user.name}
+                    {currentProject.userId === session?.user?.id && (
+                      <span className="text-surface-500 text-xs ml-2">
+                        ({t("project.members.you")})
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-surface-500">
+                    {currentProject.user.email}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-primary-500/10 text-xs font-medium text-primary-400 capitalize border border-primary-500/20">
+                  <BadgeCheck className="w-3 h-3" />
+                  Owner
+                </div>
+              </div>
+            </div>
+          )}
+
           {members.length === 0 && (
             <div className="text-sm text-surface-500 italic py-2">
               {t("project.members.empty")}

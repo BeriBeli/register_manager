@@ -94,6 +94,14 @@ projectRoutes.get("/:id", async (c) => {
   const project = await db.query.projects.findFirst({
     where: eq(projects.id, id),
     with: {
+      user: {
+        columns: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
       memoryMaps: {
         with: {
           addressBlocks: {
