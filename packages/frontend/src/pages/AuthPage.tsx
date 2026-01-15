@@ -56,7 +56,8 @@ export function AuthPage() {
         }
       }
 
-      navigate("/");
+      // Force a full page reload to ensure all state is fresh
+      window.location.href = "/";
     } catch (err) {
       setError(isLogin ? t("auth.loginFailed") : t("auth.registerFailed"));
     } finally {
