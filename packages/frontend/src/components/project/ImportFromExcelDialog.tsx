@@ -4,7 +4,6 @@ import { X, Upload, FileSpreadsheet, AlertCircle, CheckCircle, ChevronRight, Che
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ImportData, ImportPlugin, ImportPreviewResponse } from "@register-manager/shared";
-import initWasm, { parse_excel as parse_excel_static } from "../../lib/wasm_parser";
 
 interface ImportFromExcelDialogProps {
   onClose: () => void;
@@ -150,9 +149,8 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
 
         result = module.parse_excel(new Uint8Array(buffer)) as ImportData;
       } else {
-        // Fallback to static binding
-        await initWasm(urlWithCache);
-        result = parse_excel_static(new Uint8Array(buffer)) as ImportData;
+        // Plugin must have jsUrl to parse files
+        throw new Error(t("import.errors.plugin_missing_js") || "Plugin does not have parser JS");
       }
 
       return result;
