@@ -4,14 +4,15 @@
         "back_to_projects": "Back to Projects",
         "editor": "Editor",
         "history": "History",
+        "admin": "Admin",
+        "users": "Users",
+        "plugins": "Plugins",
         "theme": {
             "light": "Light Mode",
             "dark": "Dark Mode",
             "system": "System"
         },
-        "language": "Language",
-        "version": "Version",
-        "admin": "Admin Area"
+        "language": "Language"
     },
     "project_view": {
         "registers_title": "Registers",
@@ -48,6 +49,7 @@
         "total_projects": "Projects",
         "recent_projects": "Recent Projects",
         "new_project": "New Project",
+        "import_excel": "Import Excel",
         "no_projects": "No projects yet",
         "create_first": "Create First Project"
     },
@@ -151,7 +153,41 @@
         "settings": "Settings",
         "optional": "Optional",
         "hex_format": "Hex format (e.g. 0x00)",
-        "default_unknown": "Default is unknown/undefined"
+        "default_unknown": "Default is unknown/undefined",
+        "back": "Back",
+        "close": "Close"
+    },
+    "import": {
+        "title": "Import from Excel",
+        "steps": {
+            "upload": "Upload",
+            "preview": "Preview",
+            "confirm": "Complete"
+        },
+        "select_format": "Select Import Format",
+        "select_file": "Select Excel File",
+        "supported_formats": "Supported",
+        "drag_drop": "Drag and drop your Excel file here",
+        "or_click": "or click to browse",
+        "no_plugins": "No import plugins available.",
+        "next": "Next",
+        "import_btn": "Import",
+        "project_info": "Project Information",
+        "warnings": "Warnings",
+        "fields": {
+            "name": "Name",
+            "vlnv": "VLNV"
+        },
+        "errors": {
+            "invalid_file_type": "Invalid file type. Please select an Excel file (.xlsx, .xls) or CSV.",
+            "wasm_not_ready": "WASM parser not integrated yet. Please check back later.",
+            "parse_failed": "Failed to parse Excel file",
+            "import_failed": "Failed to import project"
+        },
+        "success": {
+            "title": "Import Successful!",
+            "message": "Your project has been created. Redirecting..."
+        }
     },
     "auth": {
         "login": "Sign In",
@@ -214,6 +250,37 @@
                 "description": "Set a new password for {{name}}.",
                 "placeholder": "New password",
                 "success": "Password reset successfully!"
+            }
+        },
+        "plugins": {
+            "title": "Plugin Management",
+            "subtitle": "Manage import plugins and parsers",
+            "upload_title": "Upload Plugin",
+            "click_upload": "Click to upload WASM file",
+            "fields": {
+                "name": "Plugin Name",
+                "description": "Description",
+                "file": "WASM File"
+            },
+            "table": {
+                "name": "Name",
+                "description": "Description",
+                "type": "Type",
+                "extensions": "Extensions",
+                "actions": "Actions"
+            },
+            "actions": {
+                "upload": "Upload Plugin",
+                "delete": "Delete Plugin"
+            },
+            "errors": {
+                "invalid_extension": "Invalid file extension. Only .wasm files are allowed."
+            },
+            "messages": {
+                "confirmDelete": "Are you sure you want to delete plugin \"{{name}}\"? This cannot be undone.",
+                "deleteFailed": "Failed to delete plugin",
+                "loadFailed": "Failed to load plugins",
+                "noPlugins": "No plugins installed"
             }
         }
     },

@@ -42,3 +42,16 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Rust / WASM
+target/
+pkg/
+**/*.wasm
+
+# Generated WASM bindings in frontend (if treated as artifacts)
+packages/frontend/src/utils/wasm_parser.js
+packages/frontend/src/utils/wasm_parser.d.ts
+
+# Uploads
+uploads/
+packages/backend/uploads/

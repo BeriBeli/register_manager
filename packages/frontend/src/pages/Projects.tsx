@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import { Plus, FolderOpen, Clock, ChevronRight, Trash2, LayoutDashboard } from "lucide-react";
+import { Plus, FolderOpen, Clock, ChevronRight, Trash2, LayoutDashboard, FileSpreadsheet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRegisterStore } from "../stores/registerStore";
 import { ProjectDialog } from "../components/project/ProjectDialog";
+import { ImportFromExcelDialog } from "../components/project/ImportFromExcelDialog";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { useSession } from "../lib/auth-client";
 
@@ -35,6 +36,7 @@ export function Projects() {
   // Delete State
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -48,6 +50,11 @@ export function Projects() {
 
   const handleDeleteClick = (project: any) => {
     setProjectToDelete(project);
+  };
+
+  const handleCloseImportDialog = () => {
+    setShowImportDialog(false);
+    fetchProjects();
   };
 
   const handleConfirmDelete = async () => {
@@ -105,13 +112,22 @@ export function Projects() {
           <div className="card">
             <div className="p-4 border-b border-surface-700 flex items-center justify-between">
               <h2 className="font-medium text-surface-200">{t('dashboard.recent_projects')}</h2>
-              <button
-                onClick={() => setShowProjectDialog(true)}
-                className="btn-primary shadow-lg shadow-primary-500/20"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                {t('dashboard.new_project')}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowImportDialog(true)}
+                  className="btn-secondary"
+                >
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  {t('dashboard.import_excel')}
+                </button>
+                <button
+                  onClick={() => setShowProjectDialog(true)}
+                  className="btn-primary shadow-lg shadow-primary-500/20"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {t('dashboard.new_project')}
+                </button>
+              </div>
             </div>
             {isLoading ? (
               <div className="p-12 text-center text-surface-400">{t('common.loading')}</div>
@@ -181,6 +197,11 @@ export function Projects() {
           {/* Project Dialog */}
           {showProjectDialog && (
             <ProjectDialog onClose={handleCloseDialog} />
+          )}
+
+          {/* Import Dialog */}
+          {showImportDialog && (
+            <ImportFromExcelDialog onClose={handleCloseImportDialog} />
           )}
         </div>
       </div>

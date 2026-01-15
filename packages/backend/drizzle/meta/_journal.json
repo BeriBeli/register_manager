@@ -50,6 +50,20 @@
       "when": 1768445902326,
       "tag": "0006_large_silver_surfer",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1768460533440,
+      "tag": "0007_mixed_silver_centurion",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1768466022539,
+      "tag": "0008_complex_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

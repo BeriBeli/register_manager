@@ -114,7 +114,35 @@ export function Sidebar() {
               );
             })}
 
-
+            {/* Admin Navigation */}
+            {(session?.user as any)?.role === "admin" && (
+              <>
+                <div className="mt-4 px-3 mb-2 text-xs font-semibold text-surface-500 uppercase">
+                  {t("sidebar.admin")}
+                </div>
+                {[
+                  { name: "Users", href: "/admin/users", icon: User },
+                  { name: "Plugins", href: "/admin/plugins", icon: FileCode }
+                ].map((item) => {
+                  const isActive = location.pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={clsx(
+                        "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
+                        isActive
+                          ? "bg-primary-600/20 text-primary-400"
+                          : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
+                      )}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {t(`sidebar.${item.name.toLowerCase()}`)}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
         )}
 
@@ -136,15 +164,7 @@ export function Sidebar() {
               </div>
 
               <div className="flex items-center gap-0.5">
-                {(session?.user as any)?.role === "admin" && (
-                  <Link
-                    to="/admin"
-                    className="p-1.5 rounded-md text-surface-400 hover:text-primary-400 hover:bg-surface-700 transition-colors"
-                    title={t("sidebar.admin")}
-                  >
-                    <Shield className="w-4 h-4" />
-                  </Link>
-                )}
+                {/* Admin link removed as it's now in the main navigation */}
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-1.5 rounded-md text-surface-400 hover:text-surface-100 hover:bg-surface-700 transition-colors"

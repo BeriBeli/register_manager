@@ -1,0 +1,1 @@
+ALTER TABLE "plugins" ADD COLUMN "js_path" text;

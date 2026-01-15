@@ -1,0 +1,26 @@
+[package]
+name = "register_excel_parser"
+version = "0.1.0"
+edition = "2021"
+description = "WebAssembly plugin for parsing Excel files into Register Manager format"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+calamine = { version = "0.30.0", features = ["dates"] } 
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde-wasm-bindgen = "0.4"
+polars = { version = "0.50.0", default-features = false, features = ["lazy", "strings", "regex", "string_to_integer", "dtype-array", "range", "serde", "dtype-i128", "timezones", "rank"] }
+anyhow = "1.0"
+thiserror = "2.0" # Match irgen
+getrandom = { version = "0.2", features = ["js"] }
+# Note: calamine 0.24+ works well. verification needed for wasm compatibility (no pure-file deps).
+# calamine uses std::fs by default for open_workbook, but open_workbook_from_rs works with Cursor.
+
+[profile.release]
+lto = true
+opt-level = "z"

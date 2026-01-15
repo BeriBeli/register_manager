@@ -18,7 +18,8 @@
     "db:import": "bun run --filter @register-manager/backend db:import",
     "test": "bun run --filter '*' test",
     "lint": "bun run --filter '*' lint",
-    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist"
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist",
+    "plugin:build": "cd register_excel_parser && wasm-pack build --target web --release"
   },
   "devDependencies": {
     "typescript": "^5.7.0"

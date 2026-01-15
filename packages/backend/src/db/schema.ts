@@ -247,6 +247,22 @@ export const projectMembers = pgTable("project_members", {
 });
 
 // ============================================================================
+// Plugins
+// ============================================================================
+
+export const plugins = pgTable("plugins", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull().default("wasm"),
+  wasmPath: text("wasm_path").notNull(),
+  jsPath: text("js_path"),
+  supportedExtensions: jsonb("supported_extensions").notNull().$type<string[]>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -275,6 +291,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   user: one(user, {
     fields: [projects.userId],
     references: [user.id],
+    relationName: "projectOwner",
   }),
   memoryMaps: many(memoryMaps),
   versions: many(projectVersions),

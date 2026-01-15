@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
 import { AdminUsersPage } from "./pages/AdminUsersPage";
+import { AdminPluginsPage } from "./pages/AdminPluginsPage";
 import { Projects } from "./pages/Projects";
 import { ProjectRoute } from "./pages/ProjectRoute";
 import { ProjectVersions } from "./pages/ProjectVersions";
@@ -129,14 +130,23 @@ function App() {
       >
         <Route index element={<Projects />} />
         <Route
-          path="admin"
+          path="admin/users"
           element={
             <AdminRoute>
               <AdminUsersPage />
             </AdminRoute>
           }
         />
-        <Route path="users" element={<Navigate to="admin" replace />} />
+        <Route
+          path="admin/plugins"
+          element={
+            <AdminRoute>
+              <AdminPluginsPage />
+            </AdminRoute>
+          }
+        />
+        <Route path="admin" element={<Navigate to="admin/users" replace />} />
+        <Route path="users" element={<Navigate to="admin/users" replace />} />
         <Route path="project/:id" element={<ProjectRoute />} />
         <Route path="project/:id/versions" element={<ProjectVersions />} />
       </Route>

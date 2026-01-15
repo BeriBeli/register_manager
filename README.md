@@ -1,160 +1,85 @@
 # Register Manager
 
-A register management tool based on the IEEE 1685-2022 IP-XACT TGI API specification.
+A high-performance, web-based register management tool compliant with IEEE 1685-2022 IP-XACT standards. Built with a modern tech stack (Bun, Hono, React, Rust/WASM) to deliver a premium user experience.
+
+[中文文档](./README_zh.md)
 
 ## Features
 
-### Implemented ✅
+### Core Functionality ✅
+- 🎨 **Visual Register Editor** - Interactive UI for editing registers, bit fields with drag-to-select.
+- 📊 **Real-time Visualization** - Dynamic bit field rendering and memory map hierarchy.
+- 🗂️ **Project Management** - Organize designs into projects with versions.
+- 🔒 **Authentication** - Secure login via Email/Password (Better Auth).
+- ⚙️ **Plugin System** - Extensible architecture supporting WASM-based plugins for custom import/export logic.
+- ⚡ **Dynamic Loading** - Support for hot-loading plugins (WASM + JS) without recompilation.
 
-- 🎨 **Visual Register Editor** - Interactive UI for creating and editing registers with bit fields
-- 📊 **Real-time Bit Field Rendering** - Interactive bit field visualization with drag-to-select range creation
-- �️ **Hierarchical Structure** - Support for Memory Maps → Address Blocks → Registers → Fields hierarchy
-- �📤 **Multi-format Export**
-  - IP-XACT XML - IEEE 1685-2022 compliant format
-  - C Header Files - with configurable endianness and access macros
-  - UVM RAL - SystemVerilog register abstraction layer
-  - HTML Documentation - standalone documentation export
-- 🎯 **Field Properties** - Full support for field access types, reset values, enumerated values
-- 🌐 **Internationalization (i18n)** - Multi-language support infrastructure
+### Data Processing ✅
+- 📥 **Excel Import** - **Powered by Rust & Polars**, offering high-performance parsing of complex Excel formats (e.g., irgen format).
+- 📤 **Multi-format Export**
+  - IP-XACT XML (IEEE 1685-2022)
+  - C Headers (with macros & endianness control)
+  - UVM RAL (SystemVerilog)
+  - HTML Documentation
 
-### In Progress 🚧
-
-- � **Authentication** - Basic auth routes defined (Better Auth integration planned)
-
-## Tech Stack
-
-- **Runtime**: Bun
-- **Backend**: Hono + Drizzle ORM + PostgreSQL
-- **Frontend**: React + TypeScript + Tailwind CSS + Vite
-- **Shared**: Zod schemas for type-safe validation
+### Architecture 🏗️
+- **Monorepo**: Efficiently managed via Bun Workspaces.
+- **Frontend**: React + Vite + TailwindCSS (Premium UI/UX).
+- **Backend**: Hono + Drizzle ORM + PostgreSQL.
+- **Performance**: Heavy data processing offloaded to **WASM** (Rust).
 
 ## Quick Start
 
 ### Prerequisites
-
-- [Bun](https://bun.sh/) >= 1.0
+- [Bun](https://bun.sh/) >= 1.0 (Runtime & Package Manager)
 - [PostgreSQL](https://www.postgresql.org/) >= 14
+- [Rust](https://www.rust-lang.org/) (for building WASM plugins)
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
 
 ### Installation
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 bun install
 
-# Configure environment variables
+# 2. Environment Setup
 cp .env.example packages/backend/.env
-# Edit packages/backend/.env to set database connection
+# Edit packages/backend/.env to configure DATABASE_URL
 
-# Run database migrations
+# 3. Database Migration
+bun run db:generate
 bun run db:migrate
+bun run db:seed  # Optional: Seed initial data
 
-# Add test user (development)
-bun run db:seed
+# 4. Build Plugins (Optional, generic WASM parser)
+bun run plugin:build
 
-# Start development server
+# 5. Start Development Server (Frontend + Backend)
 bun run dev
 ```
 
-### Development Commands
+### Plugin Development
 
+To build the Excel Parser plugin (Rust/WASM):
 ```bash
-# Start backend only
-bun run dev:backend
-
-# Start frontend only
-bun run dev:frontend
-
-# Run tests
-bun run test
-
-# Build for production
-bun run build
-
-# Open Drizzle Studio (database GUI)
-bun run db:studio
-
-# Import IP-XACT XML file for testing
-bun run db:import [path/to/file.xml]
+# Build WASM and generate JS glue code
+cd register_excel_parser
+wasm-pack build --target web --release
 ```
-
-For more details on importing IP-XACT files, see [IP-XACT Import Guide](docs/ipxact-import.md).
+The output is in `pkg/` directory.
+- **Dynamic Mode**: Upload `pkg/register_excel_parser_bg.wasm` (Binary) and `pkg/register_excel_parser.js` (JS Glue) via the Admin UI to enable the plugin instantly.
 
 ## Project Structure
 
 ```
 register_manager/
 ├── packages/
-│   ├── shared/              # Shared types, schemas, and utilities
-│   │   └── src/
-│   │       ├── types/       # TypeScript type definitions
-│   │       ├── schemas/     # Zod validation schemas
-│   │       └── utils/       # Shared utility functions
-│   ├── backend/             # Backend service (Hono)
-│   │   └── src/
-│   │       ├── db/          # Database schema and migrations
-│   │       ├── routes/      # API route handlers
-│   │       └── services/    # Business logic and generators
-│   └── frontend/            # Frontend application (React)
-│       └── src/
-│           ├── components/  # Reusable UI components
-│           ├── pages/       # Page components
-│           ├── stores/      # State management
-│           └── i18n/        # Internationalization
-├── docs/                    # Documentation
-│   └── api_compliance_analysis.md
-├── TGI.yaml                 # IP-XACT TGI API specification
-└── package.json             # Root monorepo configuration
+│   ├── backend/             # Hono API Server
+│   ├── frontend/            # React Application
+│   └── shared/              # Shared Types & Schemas
+├── register_excel_parser/   # Rust Project (WASM Plugin)
+└── package.json
 ```
-
-## Database Schema
-
-The application uses a hierarchical data model:
-
-- **Users** - User accounts (authentication pending)
-- **Projects** - Top-level container for register designs
-- **Memory Maps** - Memory region definitions within a project
-- **Address Blocks** - Contiguous memory ranges within a memory map
-- **Registers** - Individual registers within an address block
-- **Fields** - Bit fields within a register
-- **Enumerated Values** - Named constants for field values
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET/POST | `/api/projects` | List/Create projects |
-| GET/PUT/DELETE | `/api/projects/:id` | Get/Update/Delete project |
-| GET/POST | `/api/addressBlocks` | List/Create address blocks |
-| GET/POST/PUT/DELETE | `/api/registers` | CRUD operations for registers |
-| POST | `/api/export/:projectId` | Export project in specified format |
-| GET | `/api/export/formats` | List available export formats |
-
-## Roadmap
-
-### Final Priority
-
-- [ ] **TGI API Compliance** - Implement IEEE 1685-2022 IP-XACT TGI (Tool Generator Interface) compatible API layer at `/tgi/*` for external EDA tool integration. See [API Compliance Analysis](docs/api_compliance_analysis.md) for details.
-
-### High Priority
-
-- [ ] **Multi-user Authentication** - Complete Better Auth integration with login/register/logout
-- [ ] **Project Version Control** - Git-like versioning for register designs with history tracking
-- [ ] **Import from Excel** - Plugin-based import from spreadsheet formats
-
-### Medium Priority
-
-- [ ] **Export to Excel** - Plugin-based export to spreadsheet formats
-- [ ] **IP-XACT Import** - Import existing IP-XACT XML files
-- [ ] **Register Templates** - Predefined register templates for common peripherals
-- [ ] **Diff/Compare** - Compare register maps between versions or projects
-
-### Future Enhancements
-
-- [ ] **Collaboration** - Real-time collaborative editing
-- [ ] **Access Control** - Role-based permissions for teams
-- [ ] **Register Validation** - Address overlap detection and constraint checking
-- [ ] **Documentation Generation** - Extended document formats (PDF, Markdown)
-- [ ] **CI/CD Integration** - API for automated register file generation
 
 ## License
 

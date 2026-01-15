@@ -8,6 +8,9 @@ import { registerRoutes } from "./routes/registers";
 import { exportRoutes } from "./routes/export";
 import { addressBlockRoutes } from "./routes/addressBlocks";
 import { versionRoutes } from "./routes/versions";
+import { importRoutes } from "./routes/import";
+import { pluginRoutes } from "./routes/plugins";
+import { serveStatic } from "hono/bun";
 import { auth } from "./lib/auth";
 
 // Define app type with session variables
@@ -97,6 +100,7 @@ app.use("/api/projects/*", approvalMiddleware as any);
 app.use("/api/registers/*", approvalMiddleware as any);
 app.use("/api/export/*", approvalMiddleware as any);
 app.use("/api/address-blocks/*", approvalMiddleware as any);
+app.use("/api/import/*", approvalMiddleware as any);
 app.use("/api/admin/*", approvalMiddleware as any);
 
 // API routes
@@ -105,6 +109,11 @@ app.route("/api/registers", registerRoutes);
 app.route("/api/export", exportRoutes);
 app.route("/api/address-blocks", addressBlockRoutes);
 app.route("/api/projects/versions", versionRoutes);
+app.route("/api/import", importRoutes);
+app.route("/api/plugins", pluginRoutes);
+
+// Static file serving for uploads (plugins)
+app.use("/uploads/*", serveStatic({ root: "./" }));
 
 // Custom Admin Routes (Admin Plugin handles list, delete, etc.)
 // We only keep custom logic like 'approve' that isn't standard in the plugin

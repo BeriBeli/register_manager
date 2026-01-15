@@ -3,7 +3,7 @@
         "projects": "所有项目",
         "back_to_projects": "返回项目列表",
         "editor": "编辑器",
-        "history": "历史版本",
+        "history": "历史记录",
         "theme": {
             "light": "浅色模式",
             "dark": "深色模式",
@@ -11,7 +11,9 @@
         },
         "language": "语言",
         "version": "版本",
-        "admin": "管理后台"
+        "admin": "管理",
+        "users": "用户",
+        "plugins": "插件"
     },
     "project_view": {
         "registers_title": "寄存器",
@@ -48,6 +50,7 @@
         "total_projects": "项目总数",
         "recent_projects": "最近项目",
         "new_project": "新建项目",
+        "import_excel": "导入 Excel",
         "no_projects": "暂无项目",
         "create_first": "创建第一个项目"
     },
@@ -151,7 +154,41 @@
         "settings": "设置",
         "optional": "可选",
         "hex_format": "十六进制格式 (例如 0x00)",
-        "default_unknown": "默认为 未知/未定义"
+        "default_unknown": "默认为 未知/未定义",
+        "back": "返回",
+        "close": "关闭"
+    },
+    "import": {
+        "title": "从 Excel 导入",
+        "steps": {
+            "upload": "上传",
+            "preview": "预览",
+            "confirm": "完成"
+        },
+        "select_format": "选择导入格式",
+        "select_file": "选择 Excel 文件",
+        "supported_formats": "支持格式",
+        "drag_drop": "拖拽 Excel 文件到此处",
+        "or_click": "或点击浏览",
+        "no_plugins": "没有可用的导入插件。",
+        "next": "下一步",
+        "import_btn": "导入",
+        "project_info": "项目信息",
+        "warnings": "警告",
+        "fields": {
+            "name": "名称",
+            "vlnv": "VLNV"
+        },
+        "errors": {
+            "invalid_file_type": "无效的文件类型。请选择 Excel 文件 (.xlsx, .xls) 或 CSV。",
+            "wasm_not_ready": "WASM 解析器尚未集成，请稍后再试。",
+            "parse_failed": "解析 Excel 文件失败",
+            "import_failed": "导入项目失败"
+        },
+        "success": {
+            "title": "导入成功！",
+            "message": "项目已创建，正在跳转..."
+        }
     },
     "auth": {
         "login": "登录",
@@ -182,7 +219,7 @@
     "admin": {
         "users": {
             "title": "用户管理",
-            "subtitle": "管理用户访问权限和审批",
+            "subtitle": "管理用户账户、角色和审批",
             "table": {
                 "user": "用户",
                 "role": "角色",
@@ -192,15 +229,15 @@
             },
             "status": {
                 "active": "已激活",
-                "pending": "待审核"
+                "pending": "待审批"
             },
             "actions": {
                 "approve": "批准",
-                "resetPassword": "重置密码",
                 "delete": "删除用户",
-                "cancel": "取消",
+                "resetPassword": "重置密码",
                 "reset": "重置",
-                "resetting": "重置中..."
+                "resetting": "重置中...",
+                "cancel": "取消"
             },
             "messages": {
                 "confirmDelete": "确定要删除此用户吗？此操作无法撤销。",
@@ -211,9 +248,40 @@
             },
             "resetModal": {
                 "title": "重置密码",
-                "description": "为 {{name}} 设置新密码。",
-                "placeholder": "新密码",
+                "description": "为 {{name}} 输入新密码。",
+                "placeholder": "新密码 (至少8位)",
                 "success": "密码重置成功！"
+            }
+        },
+        "plugins": {
+            "title": "插件管理",
+            "subtitle": "管理导入插件和解析器",
+            "upload_title": "上传插件",
+            "click_upload": "点击上传 WASM 文件",
+            "fields": {
+                "name": "插件名称",
+                "description": "描述",
+                "file": "WASM 文件"
+            },
+            "table": {
+                "name": "名称",
+                "description": "描述",
+                "type": "类型",
+                "extensions": "扩展名",
+                "actions": "操作"
+            },
+            "actions": {
+                "upload": "上传插件",
+                "delete": "删除插件"
+            },
+            "errors": {
+                "invalid_extension": "文件扩展名无效，仅允许 .wasm 文件。"
+            },
+            "messages": {
+                "confirmDelete": "确定要删除插件 \"{{name}}\" 吗？此操作无法撤销。",
+                "deleteFailed": "删除插件失败",
+                "loadFailed": "加载插件失败",
+                "noPlugins": "未安装插件"
             }
         }
     },
