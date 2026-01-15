@@ -49,11 +49,9 @@ The current implementation is a standard RESTful API for a web application:
 |-------|--------|-------------|
 | `/api/projects` | GET | List all projects |
 | `/api/projects` | POST | Create a project |
-| `/api/projects/:id` | GET | Get project with full hierarchy |
+| `/api/projects/:id` | GET | Get project with full hierarchy (includes memory maps/address blocks) |
 | `/api/projects/:id` | PUT | Update project |
 | `/api/projects/:id` | DELETE | Delete project |
-| `/api/projects/:projectId/memory-maps` | GET/POST | Memory maps CRUD |
-| `/api/projects/:projectId/memory-maps/:mmId/address-blocks` | GET/POST | Address blocks CRUD |
 | `/api/registers/address-block/:abId` | GET/POST | Registers by address block |
 | `/api/registers/:id` | GET/PUT/DELETE | Single register operations |
 | `/api/registers/:regId/fields` | GET/POST | Fields operations |
@@ -61,6 +59,24 @@ The current implementation is a standard RESTful API for a web application:
 | `/api/address-blocks/:id` | PUT/DELETE | Address block update/delete |
 | `/api/export/:projectId` | POST | Export project (IP-XACT, C Header, UVM RAL, HTML) |
 | `/api/auth/*` | POST/GET | Authentication (placeholder) |
+
+---
+
+## TGI -> Current API Mapping (Partial)
+
+The table below highlights the closest equivalents only for the register hierarchy. Most TGI endpoints have **no** direct implementation today.
+
+| TGI Endpoint | TGI Purpose | Current API Equivalent | Notes |
+|-------------|-------------|------------------------|-------|
+| `/getComponentIDs` | List components | `/api/projects` (GET) | Projects use UUIDs, not VLNV. |
+| `/getComponentMemoryMapIDs` | Memory map IDs for component | None | No memory-map CRUD route; only included in project detail. |
+| `/getMemoryMapAddressBlockIDs` | Address block IDs for memory map | None | Address blocks are nested in project detail. |
+| `/getAddressBlockRegisterIDs` | Register IDs for address block | `/api/registers/address-block/:abId` (GET) | Returns full register objects. |
+| `/getRegisterFieldIDs` | Field IDs for register | `/api/registers/:regId/fields` (GET) | Returns full field objects. |
+| `/addAddressBlockRegister` | Create register | `/api/registers/address-block/:abId` (POST) | Uses JSON payload instead of query params. |
+| `/setRegisterVolatility` | Update register property | `/api/registers/:id` (PUT) | Resource update instead of per-attribute setter. |
+| `/getXML` | Get XML by element ID | None | XML export is project-based only. |
+| `/init`, `/end`, `/message` | Generator lifecycle | None | No generator lifecycle in backend. |
 
 ---
 
