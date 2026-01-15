@@ -4,6 +4,7 @@ import type { Project, Register, Field } from "@register-manager/shared";
 import { useRegisterStore } from "../../stores/registerStore";
 import { useTranslation } from "react-i18next";
 
+
 type EditableEntity = Project | Register | Field | null;
 type EntityType = "project" | "register" | "field" | null;
 
@@ -181,6 +182,8 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
             </div>
           </div>
         )}
+
+        {/* Project Members (Access Control) - REMOVED, moved to ShareDialog */}
 
         {/* Register-specific Properties */}
         {entityType === "register" && (

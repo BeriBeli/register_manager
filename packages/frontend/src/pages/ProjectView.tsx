@@ -11,12 +11,13 @@ import { ExportDialog } from "../components/export/ExportDialog";
 import { CreateAddressBlockDialog } from "../components/project/CreateAddressBlockDialog";
 import { AddressBlockDialog } from "../components/project/AddressBlockDialog";
 import { useRegisterStore } from "../stores/registerStore";
-import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight, History as HistoryIcon, Save } from "lucide-react";
+import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight, History as HistoryIcon, Save, Users, MoreVertical } from "lucide-react";
 import type { Field, Register, AddressBlock } from "@register-manager/shared";
 import { parseNumber } from "@register-manager/shared";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { CreateVersionDialog } from "../components/version/CreateVersionDialog";
+import { ShareDialog } from "../components/project/ShareDialog";
 
 export function ProjectView() {
   const { t } = useTranslation();
@@ -52,6 +53,8 @@ export function ProjectView() {
   const [showPropertyPanel, setShowPropertyPanel] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateVersionDialog, setShowCreateVersionDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   // New state for Address Block Editing
   const [editingAddressBlock, setEditingAddressBlock] = useState<AddressBlock | null>(null);
@@ -389,6 +392,18 @@ export function ProjectView() {
               <div className="grid grid-cols-1 gap-4">
                 <button
                   className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
+                  onClick={() => setShowShareDialog(true)}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-surface-900 flex items-center justify-center text-primary-400 group-hover:text-primary-300">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-medium">{t("project_view.share")}</div>
+                    <div className="text-sm text-surface-400 mt-0.5">{t("project_view.share_desc", { name: currentProject.name })}</div>
+                  </div>
+                </button>
+                <button
+                  className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
                   onClick={() => setShowCreateVersionDialog(true)}
                 >
                   <div className="w-10 h-10 rounded-lg bg-surface-900 flex items-center justify-center text-primary-400 group-hover:text-primary-300">
@@ -462,27 +477,63 @@ export function ProjectView() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => setShowPropertyPanel(true)}
-            className="btn-ghost text-surface-400 hover:text-surface-100 hover:bg-surface-800/50 transition-all rounded-lg px-3 py-2"
-            title={t("common.settings")}
-          >
-            <SettingsIcon className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setShowCreateVersionDialog(true)}
+            onClick={() => setShowShareDialog(true)}
             className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200"
-            title={t("versions.create")}
+            title={t("project_view.share")}
           >
-            <Save className="w-4 h-4 mr-2" />
-            {t("versions.create")}
+            <Users className="w-4 h-4 mr-2" />
+            {t("project_view.share")}
           </button>
-          <button
-            onClick={() => setShowExportDialog(true)}
-            className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            {t("project_view.export")}
-          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200 px-2"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
+
+            {showMenu && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 mt-2 w-56 rounded-xl border border-surface-700 bg-surface-800 shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-1.5 space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setShowCreateVersionDialog(true);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-200 hover:bg-surface-700/50 hover:text-white transition-colors flex items-center gap-3"
+                    >
+                      <Save className="w-4 h-4 text-primary-400" />
+                      {t("versions.create")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowExportDialog(true);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-200 hover:bg-surface-700/50 hover:text-white transition-colors flex items-center gap-3"
+                    >
+                      <Download className="w-4 h-4 text-primary-400" />
+                      {t("project_view.export")}
+                    </button>
+                    <div className="h-px bg-surface-700/50 my-1.5" />
+                    <button
+                      onClick={() => {
+                        setShowPropertyPanel(true);
+                        setShowMenu(false);
+                      }}
+                      className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-200 hover:bg-surface-700/50 hover:text-white transition-colors flex items-center gap-3"
+                    >
+                      <SettingsIcon className="w-4 h-4 text-surface-400" />
+                      {t("common.settings")}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -569,6 +620,14 @@ export function ProjectView() {
               }
             }
           }}
+        />
+      )}
+
+      {showShareDialog && (
+        <ShareDialog
+          projectId={currentProject.id}
+          projectName={currentProject.name}
+          onClose={() => setShowShareDialog(false)}
         />
       )}
     </div>

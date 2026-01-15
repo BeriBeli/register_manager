@@ -39,7 +39,8 @@
         "export": "导出",
         "no_desc_short": "无描述",
         "create_snapshot": "创建快照",
-        "snapshot_desc": "保存当前状态"
+        "snapshot_desc": "保存当前状态",
+        "share": "分享"
     },
     "dashboard": {
         "title": "项目",
@@ -229,6 +230,8 @@
             "title": "删除项目",
             "desc": "确定要删除项目 \"{{name}}\" 吗？"
         },
+        "share_title": "分享项目",
+        "share_desc": "管理 {{name}} 的访问权限",
         "add_block": {
             "title": "添加地址块",
             "name_placeholder": "例如：ctrl_regs",
@@ -325,6 +328,21 @@
                 "library": "ip",
                 "version": "1.0"
             }
+        },
+        "members": {
+            "title": "项目成员",
+            "add_title": "添加成员",
+            "add": "邀请",
+            "remove": "移除成员",
+            "confirm_remove": "确定要移除该成员吗？",
+            "email_placeholder": "输入邮箱地址...",
+            "role": {
+                "editor": "编辑者",
+                "viewer": "查看者"
+            },
+            "you": "您",
+            "empty": "暂无成员。邀请他人协作！",
+            "owner": "所有者"
         }
     },
     "versions": {

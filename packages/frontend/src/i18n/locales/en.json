@@ -39,7 +39,8 @@
         "export": "Export",
         "no_desc_short": "No description",
         "create_snapshot": "Create Snapshot",
-        "snapshot_desc": "Save current project state"
+        "snapshot_desc": "Save current project state",
+        "share": "Share"
     },
     "dashboard": {
         "title": "Projects",
@@ -229,6 +230,8 @@
             "title": "Delete Project",
             "desc": "Are you sure you want to delete project \"{{name}}\"?"
         },
+        "share_title": "Share Project",
+        "share_desc": "Manage access for {{name}}",
         "add_block": {
             "title": "Add Address Block",
             "name_placeholder": "e.g., ctrl_regs",
@@ -325,6 +328,21 @@
                 "library": "ip",
                 "version": "1.0"
             }
+        },
+        "members": {
+            "title": "Project Members",
+            "add_title": "Add Member",
+            "add": "Invite",
+            "remove": "Remove Member",
+            "confirm_remove": "Are you sure you want to remove this member?",
+            "email_placeholder": "Enter email address...",
+            "role": {
+                "editor": "Editor",
+                "viewer": "Viewer"
+            },
+            "you": "You",
+            "empty": "No members yet. Invite someone to collaborate!",
+            "owner": "Owner"
         }
     },
     "versions": {

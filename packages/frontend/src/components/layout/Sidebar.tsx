@@ -107,20 +107,7 @@ export function Sidebar() {
               );
             })}
 
-            {(session?.user as any)?.role === "admin" && (
-              <Link
-                to="/admin"
-                className={clsx(
-                  "flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors",
-                  location.pathname.startsWith("/admin")
-                    ? "bg-primary-600/20 text-primary-400"
-                    : "text-surface-400 hover:bg-surface-800 hover:text-surface-200"
-                )}
-              >
-                <Shield className="w-4 h-4" />
-                {t("sidebar.admin")}
-              </Link>
-            )}
+
           </nav>
         )}
 
@@ -142,6 +129,15 @@ export function Sidebar() {
               </div>
 
               <div className="flex items-center gap-0.5">
+                {(session?.user as any)?.role === "admin" && (
+                  <Link
+                    to="/admin"
+                    className="p-1.5 rounded-md text-surface-400 hover:text-primary-400 hover:bg-surface-700 transition-colors"
+                    title={t("sidebar.admin")}
+                  >
+                    <Shield className="w-4 h-4" />
+                  </Link>
+                )}
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-1.5 rounded-md text-surface-400 hover:text-surface-100 hover:bg-surface-700 transition-colors"

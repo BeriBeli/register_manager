@@ -235,6 +235,18 @@ export const enumeratedValues = pgTable("enumerated_values", {
 });
 
 // ============================================================================
+// Project Members
+// ============================================================================
+
+export const projectMembers = pgTable("project_members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("editor"), // 'editor', 'viewer'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// ============================================================================
 // Relations
 // ============================================================================
 
@@ -242,6 +254,7 @@ export const userRelations = relations(user, ({ many }) => ({
   projects: many(projects),
   sessions: many(session),
   accounts: many(account),
+  projectMemberships: many(projectMembers),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -265,6 +278,18 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
   }),
   memoryMaps: many(memoryMaps),
   versions: many(projectVersions),
+  members: many(projectMembers),
+}));
+
+export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectMembers.projectId],
+    references: [projects.id],
+  }),
+  user: one(user, {
+    fields: [projectMembers.userId],
+    references: [user.id],
+  }),
 }));
 
 export const projectVersionsRelations = relations(projectVersions, ({ one }) => ({

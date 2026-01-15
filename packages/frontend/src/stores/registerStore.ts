@@ -58,6 +58,11 @@ interface RegisterStore {
   // Utility
   setError: (error: string | null) => void;
   setLoading: (loading: boolean) => void;
+
+  // Member actions
+  fetchProjectMembers: (projectId: string) => Promise<any[]>;
+  addProjectMember: (projectId: string, email: string, role: "editor" | "viewer") => Promise<any>;
+  removeProjectMember: (projectId: string, userId: string) => Promise<void>;
 }
 
 export const useRegisterStore = create<RegisterStore>((set, get) => ({
@@ -459,4 +464,35 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
   // Utility
   setError: (error) => set({ error }),
   setLoading: (loading) => set({ isLoading: loading }),
+
+  // Member actions
+  fetchProjectMembers: async (projectId: string) => {
+    const response = await fetch(`/api/projects/${projectId}/members`);
+    if (!response.ok) return [];
+    const json = await response.json();
+    return json.data;
+  },
+
+  addProjectMember: async (projectId: string, email: string, role: "editor" | "viewer") => {
+    const response = await fetch(`/api/projects/${projectId}/members`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, role })
+    });
+    if (!response.ok) {
+      const json = await response.json();
+      throw new Error(json.error || "Failed to add member");
+    }
+    return await response.json();
+  },
+
+  removeProjectMember: async (projectId: string, userId: string) => {
+    const response = await fetch(`/api/projects/${projectId}/members/${userId}`, {
+      method: "DELETE"
+    });
+    if (!response.ok) {
+      const json = await response.json();
+      throw new Error(json.error || "Failed to remove member");
+    }
+  }
 }));

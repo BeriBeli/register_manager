@@ -43,6 +43,13 @@
       "when": 1768312530412,
       "tag": "0005_flaky_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768445902326,
+      "tag": "0006_large_silver_surfer",
+      "breakpoints": true
     }
   ]
 }

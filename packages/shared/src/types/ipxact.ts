@@ -189,6 +189,20 @@ export interface User {
   updatedAt: Date;
 }
 
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: "editor" | "viewer";
+  createdAt: Date;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    image?: string | null;
+  };
+}
+
 // ============================================================================
 // API Types
 // ============================================================================
