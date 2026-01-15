@@ -1,8 +1,6 @@
-use wasm_bindgen::prelude::*;
 use calamine::{Reader, Xlsx, open_workbook_from_rs};
 use std::io::Cursor;
 use std::collections::HashMap;
-use serde_wasm_bindgen::to_value;
 
 mod error;
 mod excel;
@@ -16,11 +14,9 @@ use schema::{df_to_compo, df_to_blks, df_to_regs, Component};
 use types::*;
 use crate::error::Error;
 
-#[wasm_bindgen]
-pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
+pub fn parse_excel_to_import_data(data: &[u8]) -> Result<ImportData, Error> {
     let cursor = Cursor::new(data);
-    let mut wb: Xlsx<_> = open_workbook_from_rs(cursor)
-        .map_err(|e| JsError::new(&format!("Failed to open Excel: {}", e)))?;
+    let mut wb: Xlsx<_> = open_workbook_from_rs(cursor)?;
 
     // Load all sheets into DataFrames
     let sheets = wb.worksheets();
@@ -32,7 +28,7 @@ pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
                 .map(|df| (sheet_name.trim().to_lowercase(), df))
         })
         .collect::<Result<HashMap<_, _>, _>>()
-        .map_err(|e| JsError::new(&format!("DataFrame conversion error: {}", e)))?;
+        .map_err(Error::from)?;
 
     // Closure to find sheet by name (already lowercased keys)
     let mut get_df = |name: &str| -> Result<polars::prelude::DataFrame, Error> {
@@ -41,7 +37,7 @@ pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
     };
 
     let compo = {
-        let compo_df = get_df("version").map_err(|e| JsError::new(&format!("{}", e)))?;
+        let compo_df = get_df("version")?;
 
         df_to_compo(compo_df, || {
             let blks_df = get_df("address_map")?;
@@ -53,13 +49,27 @@ pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
                 let parsered_df = parse_register(regs_df)?;
                 df_to_regs(parsered_df)
             })
-        }).map_err(|e| JsError::new(&format!("Parsing error: {}", e)))?
+        }).map_err(Error::from)?
     };
 
     // Convert internal Component to ImportData logic
     let import_data = convert_component_to_import_data(compo);
 
-    to_value(&import_data).map_err(|e| JsError::new(&format!("Serialization error: {}", e)))
+    Ok(import_data)
+}
+
+#[cfg(target_arch = "wasm32")]
+mod wasm_exports {
+    use super::*;
+    use serde_wasm_bindgen::to_value;
+    use wasm_bindgen::prelude::*;
+
+    #[wasm_bindgen]
+    pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
+        let import_data = parse_excel_to_import_data(data)
+            .map_err(|e| JsError::new(&format!("Parsing error: {}", e)))?;
+        to_value(&import_data).map_err(|e| JsError::new(&format!("Serialization error: {}", e)))
+    }
 }
 
 fn ensure_hex(s: String) -> String {
@@ -129,5 +139,18 @@ fn convert_component_to_import_data(compo: Component) -> ImportData {
             name: "default_map".to_string(),
             address_blocks,
         }],
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ensure_hex_handles_hex_decimal_and_fallback() {
+        assert_eq!(ensure_hex("0x10".to_string()), "0x10");
+        assert_eq!(ensure_hex("0X10".to_string()), "0X10");
+        assert_eq!(ensure_hex(" 255 ".to_string()), "0xFF");
+        assert_eq!(ensure_hex("not-a-number".to_string()), "not-a-number");
     }
 }

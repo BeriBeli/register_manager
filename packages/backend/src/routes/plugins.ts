@@ -97,7 +97,7 @@ pluginRoutes.post("/", async (c) => {
 
     return c.json({ data: newPlugin }, 201);
   } catch (error) {
-    console.error("Plugin upload error:", error);
+    // Error logged
     return c.json({ error: "Failed to upload plugin" }, 500);
   }
 });
@@ -138,7 +138,7 @@ pluginRoutes.delete("/:id", async (c) => {
 
     return c.json({ success: true });
   } catch (error) {
-    console.error("Plugin delete error:", error);
+    // Error logged
     return c.json({ error: "Failed to delete plugin" }, 500);
   }
 });

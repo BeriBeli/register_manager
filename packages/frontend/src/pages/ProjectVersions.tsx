@@ -66,7 +66,7 @@ export function ProjectVersions() {
       queryClient.invalidateQueries({ queryKey: ["project-versions", id] });
       queryClient.invalidateQueries({ queryKey: ["project", id] });
       setVersionToRestore(null);
-      alert(t("versions.success_restore") || "Version restored");
+      // Success feedback is provided by dialog closing and data refresh
     },
   });
 

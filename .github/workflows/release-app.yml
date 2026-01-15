@@ -1,0 +1,43 @@
+name: Release (App)
+
+on:
+  push:
+    tags:
+      - "app-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Test
+        run: bun test --coverage
+
+      - name: Build
+        run: bun run build
+
+      - name: Package artifacts
+        run: |
+          tar -czf frontend-dist.tgz -C packages/frontend dist
+          tar -czf backend-dist.tgz -C packages/backend dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            frontend-dist.tgz
+            backend-dist.tgz

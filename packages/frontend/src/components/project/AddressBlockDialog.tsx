@@ -89,7 +89,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
         onClose(initialData.id);
       } else {
         if (!memoryMapId) {
-          console.error("Memory Map ID required for creation");
+          // Error handled silently
           return;
         }
         const newId = await createAddressBlock(memoryMapId, {
@@ -104,7 +104,7 @@ export function AddressBlockDialog({ memoryMapId, initialData, onClose }: Addres
         onClose(newId);
       }
     } catch (error) {
-      console.error("Failed to save address block:", error);
+      // Error handled silently
       setErrors({ submit: t("project.add_block.save_failed") });
     }
   };

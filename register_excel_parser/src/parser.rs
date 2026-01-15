@@ -168,3 +168,54 @@ pub fn parse_register(df: DataFrame) -> anyhow::Result<DataFrame, Error> {
 
     Ok(parsed_df)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_register_fills_description_and_aggregates_fields() {
+        let df = DataFrame::new(vec![
+            Column::new("ADDR".into(), vec![Some("0x0".to_string()), None]),
+            Column::new("REG".into(), vec![Some("CTRL".to_string()), None]),
+            Column::new("FIELD".into(), vec![Some("EN".to_string()), Some("MODE".to_string())]),
+            Column::new("BIT".into(), vec![Some("[0]".to_string()), Some("[2:1]".to_string())]),
+            Column::new("WIDTH".into(), vec![Some("1".to_string()), Some("2".to_string())]),
+            Column::new("ATTRIBUTE".into(), vec![Some("RW".to_string()), Some("RW".to_string())]),
+            Column::new("DEFAULT".into(), vec![Some("0".to_string()), Some("0".to_string())]),
+            Column::new("DESCRIPTION".into(), vec![None, Some("Mode bits".to_string())]),
+        ])
+        .expect("df");
+
+        let parsed = parse_register(df).expect("parse");
+        assert_eq!(parsed.height(), 1);
+
+        let reg = parsed
+            .column("REG")
+            .expect("REG")
+            .str()
+            .expect("REG str")
+            .get(0)
+            .expect("REG value");
+        assert_eq!(reg, "CTRL");
+
+        let reg_width = parsed
+            .column("REG_WIDTH")
+            .expect("REG_WIDTH")
+            .str()
+            .expect("REG_WIDTH str")
+            .get(0)
+            .expect("REG_WIDTH value");
+        assert_eq!(reg_width, "3");
+
+        let desc_series_string = format!(
+            "{:?}",
+            parsed
+                .column("DESCRIPTION")
+                .expect("DESCRIPTION")
+                .as_materialized_series()
+        );
+        assert!(desc_series_string.contains("No Description"));
+        assert!(desc_series_string.contains("Mode bits"));
+    }
+}

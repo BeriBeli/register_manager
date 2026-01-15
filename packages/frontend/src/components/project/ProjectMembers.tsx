@@ -30,7 +30,7 @@ export function ProjectMembers({ projectId }: { projectId: string }) {
       const data = await fetchProjectMembers(projectId);
       setMembers(data);
     } catch (e) {
-      console.error("Failed to load members", e);
+      // Error handled silently
     }
   };
 

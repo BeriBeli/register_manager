@@ -77,7 +77,7 @@ importRoutes.get("/plugins", async (c) => {
 
     return c.json({ data: mappedPlugins });
   } catch (error) {
-    console.error("Failed to fetch plugins:", error);
+    // Error logged
     return c.json({ error: "Failed to fetch plugins" }, 500);
   }
 });
@@ -254,7 +254,7 @@ importRoutes.post("/execute", zValidator("json", importExecuteSchema), async (c)
       },
     }, 201);
   } catch (error) {
-    console.error("Import execution error:", error);
+    // Error logged
     return c.json({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error during import",

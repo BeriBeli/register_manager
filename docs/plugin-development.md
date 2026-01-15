@@ -159,11 +159,18 @@ pub fn parse_excel(data: &[u8]) -> Result<JsValue, JsError> {
 ### Building
 
 ```bash
-# Install wasm-pack
-cargo install wasm-pack
+# Add WASM target
+rustup target add wasm32-unknown-unknown
 
-# Build for web target
-wasm-pack build --target web --out-dir pkg
+# Install wasm-bindgen CLI
+cargo install wasm-bindgen-cli --locked
+
+# Build the WASM binary
+cargo build --release --target wasm32-unknown-unknown
+
+# Generate JS glue + .wasm for web
+wasm-bindgen --target web --out-dir pkg --out-name my_import_plugin --typescript \
+  target/wasm32-unknown-unknown/release/my_import_plugin.wasm
 
 # Output files:
 # pkg/my_import_plugin.js

@@ -47,7 +47,7 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch plugins:", err);
+        // Error handled silently
       } finally {
         setPluginsLoading(false);
       }
@@ -135,7 +135,6 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
         }
         const jsUrlWithCache = jsUrl.includes('?') ? `${jsUrl}&t=${timestamp}` : `${jsUrl}?t=${timestamp}`;
 
-        console.log("Loading Dynamic Plugin JS from:", jsUrlWithCache);
 
         const module = await import(/* @vite-ignore */ jsUrlWithCache);
 
@@ -152,15 +151,13 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
         result = module.parse_excel(new Uint8Array(buffer)) as ImportData;
       } else {
         // Fallback to static binding
-        console.log("Loading Static WASM from:", urlWithCache);
         await initWasm(urlWithCache);
         result = parse_excel_static(new Uint8Array(buffer)) as ImportData;
       }
 
-      console.log("WASM Result:", result);
       return result;
     } catch (e: any) {
-      console.error("WASM Parse Error:", e);
+      // Error handled silently
       throw new Error(t("import.errors.parse_failed") + ": " + (e.message || e));
     }
   };

@@ -34,7 +34,7 @@ A high-performance, web-based register management tool compliant with IEEE 1685-
 - [Bun](https://bun.sh/) >= 1.0 (Runtime & Package Manager)
 - [PostgreSQL](https://www.postgresql.org/) >= 14
 - [Rust](https://www.rust-lang.org/) (for building WASM plugins)
-- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
+- `wasm-bindgen-cli` (`cargo install wasm-bindgen-cli --locked`)
 
 ### Installation
 
@@ -63,8 +63,7 @@ bun run dev
 To build the Excel Parser plugin (Rust/WASM):
 ```bash
 # Build WASM and generate JS glue code
-cd register_excel_parser
-wasm-pack build --target web --release
+bun run plugin:build
 ```
 The output is in `pkg/` directory.
 - **Dynamic Mode**: Upload `pkg/register_excel_parser_bg.wasm` (Binary) and `pkg/register_excel_parser.js` (JS Glue) via the Admin UI to enable the plugin instantly.

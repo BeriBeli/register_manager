@@ -32,7 +32,7 @@
 - [Bun](https://bun.sh/) >= 1.0 (运行时与包管理器)
 - [PostgreSQL](https://www.postgresql.org/) >= 14
 - [Rust](https://www.rust-lang.org/) (用于编译 WASM 插件)
-- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
+- `wasm-bindgen-cli`（`cargo install wasm-bindgen-cli --locked`）
 
 ### 安装与运行
 
@@ -61,8 +61,7 @@ bun run dev
 本项目的 Excel 解析器作为一个独立的 Rust crate 存在于 `register_excel_parser/` 目录。
 编译方法：
 ```bash
-cd register_excel_parser
-wasm-pack build --target web --release
+bun run plugin:build
 ```
 编译产物位于 `pkg/` 目录。
 - **动态加载模式**：在管理后台上传 `pkg/register_excel_parser_bg.wasm` (二进制) 和 `pkg/register_excel_parser.js` (JS 胶水代码) 即可即时生效。

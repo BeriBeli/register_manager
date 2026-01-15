@@ -36,13 +36,16 @@ Defines registers within the block.
 
 ### Prerequisites
 - Rust (latest stable)
-- `wasm-pack`: `cargo install wasm-pack`
+- `wasm-bindgen-cli`: `cargo install wasm-bindgen-cli --locked`
+- WASM target: `rustup target add wasm32-unknown-unknown`
 
 ### Build
 Run the following command to build the `.wasm` file:
 
 ```bash
-wasm-pack build --target web --release
+cargo build --release --target wasm32-unknown-unknown
+wasm-bindgen --target web --out-dir pkg --out-name register_excel_parser --typescript \
+  target/wasm32-unknown-unknown/release/register_excel_parser.wasm
 ```
 
 The output will be in `pkg/`. You can upload the `register_excel_parser_bg.wasm` file to the Register Manager.

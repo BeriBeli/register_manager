@@ -68,7 +68,7 @@ export function CreateAddressBlockDialog({ memoryMapId, onClose }: CreateAddress
       });
       onClose(newId);
     } catch (error) {
-      console.error("Failed to create address block:", error);
+      // Error handled silently
       setErrors({ submit: t("project.add_block.errors.submit_failed") });
     }
   };

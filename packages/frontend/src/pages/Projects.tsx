@@ -63,9 +63,8 @@ export function Projects() {
     try {
       await deleteProject(projectToDelete.id);
       setProjectToDelete(null);
-    } catch (error) {
-      console.error("Failed to delete project", error);
-      alert(t("common.error")); // Basic fallback if store doesn't handle error UI
+    } catch {
+      // Error: dialog stays open as feedback
     } finally {
       setDeleteLoading(false);
     }

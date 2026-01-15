@@ -83,7 +83,7 @@ export function FieldDialog({ registerId, registerSize, initialBitOffset = 0, in
       await createField(registerId, formData);
       onClose();
     } catch (error) {
-      console.error("Failed to create field:", error);
+      // Error handled silently
     }
   };
 

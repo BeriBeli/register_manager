@@ -67,7 +67,7 @@ export function FieldEditDialog({ field, registerSize, onClose }: FieldEditDialo
       await updateField(field.id, formData);
       onClose();
     } catch (error) {
-      console.error("Failed to update field:", error);
+      // Error handled silently
     }
   };
 

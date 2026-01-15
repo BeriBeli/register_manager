@@ -64,11 +64,9 @@ export function AdminUsersPage() {
       });
       if (response.ok) {
         setUsers(users.map(u => u.id === id ? { ...u, approved: true } : u));
-      } else {
-        console.error(t("admin.users.messages.approveFailed"));
       }
-    } catch (err) {
-      console.error(t("admin.users.messages.approveFailed"));
+    } catch {
+      // Error handled silently - user sees no change in UI
     }
   };
 
@@ -89,10 +87,8 @@ export function AdminUsersPage() {
         setUsers(users.filter(u => u.id !== deleteUser.id));
         setDeleteUser(null);
       } else {
-        alert(error.message || t("admin.users.messages.deleteFailed"));
+        // Error: dialog stays open as feedback
       }
-    } catch (err) {
-      console.error(t("admin.users.messages.deleteFailed"));
     } finally {
       setDeleteLoading(false);
     }

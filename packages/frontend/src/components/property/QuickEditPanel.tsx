@@ -34,7 +34,7 @@ export function QuickEditPanel({ item, itemType }: QuickEditPanelProps) {
       }
       setHasChanges(false);
     } catch (error) {
-      console.error("Failed to save:", error);
+      // Error handled silently
     }
   };
 

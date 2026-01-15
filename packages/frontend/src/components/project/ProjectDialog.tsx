@@ -71,7 +71,7 @@ export function ProjectDialog({ onClose }: ProjectDialogProps) {
       // Close dialog and let the user navigate from dashboard
       onClose();
     } catch (error) {
-      console.error("Failed to create project:", error);
+      // Error handled silently
       setErrors({ submit: t("project.create_dialog.errors.submit_failed") });
     }
   };

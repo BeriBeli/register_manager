@@ -79,8 +79,7 @@ export function ExportDialog({ projectId, projectName, onClose }: ExportDialogPr
 
       onClose();
     } catch (error) {
-      console.error("Export failed:", error);
-      alert("Export failed. Please try again.");
+      // Error handled silently\n      // Export failure feedback: dialog stays open, loading stops
     } finally {
       setIsExporting(false);
     }
@@ -113,8 +112,8 @@ export function ExportDialog({ projectId, projectName, onClose }: ExportDialogPr
                   key={format.id}
                   onClick={() => setSelectedFormat(format.id)}
                   className={`w-full p-4 rounded-lg border-2 transition-all text-left ${isSelected
-                      ? "border-primary-500 bg-primary-600/10"
-                      : "border-surface-700 hover:border-surface-600 bg-surface-800"
+                    ? "border-primary-500 bg-primary-600/10"
+                    : "border-surface-700 hover:border-surface-600 bg-surface-800"
                     }`}
                   disabled={isExporting}
                 >

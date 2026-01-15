@@ -56,12 +56,10 @@ export function AdminPluginsPage() {
         setPlugins(plugins.filter(p => p.id !== deletePlugin.id));
         setDeletePlugin(null);
       } else {
-        const result = await response.json();
-        alert(result.error || t("admin.plugins.messages.deleteFailed"));
+        // Error: dialog stays open as feedback
       }
-    } catch (err) {
-      console.error(t("admin.plugins.messages.deleteFailed"));
-      alert(t("admin.plugins.messages.deleteFailed"));
+    } catch {
+      // Error: dialog stays open as feedback
     } finally {
       setDeleteLoading(false);
     }

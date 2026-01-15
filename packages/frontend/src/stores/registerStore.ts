@@ -90,11 +90,9 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
 
   fetchProject: async (id: string) => {
     set({ isLoading: true, error: null });
-    console.log(`📡 Fetching project: ${id}`);
     try {
       const response = await fetch(`/api/projects/${id}`);
       const json = await response.json();
-      console.log("📥 Fetch project response:", json);
 
       if (!response.ok) {
         throw new Error(json.error || "Failed to fetch project");
@@ -138,7 +136,7 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
         };
       });
     } catch (error) {
-      console.error("❌ Fetch project failed:", error);
+      // Error state is set above
       set({ error: (error as Error).message, isLoading: false });
     }
   },

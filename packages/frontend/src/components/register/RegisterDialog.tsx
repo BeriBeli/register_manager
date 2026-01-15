@@ -77,7 +77,7 @@ export function RegisterDialog({ addressBlockId, onClose, editingRegister }: Reg
         onClose(newId);
       }
     } catch (error) {
-      console.error("Failed to save register:", error);
+      // Error handled silently
     }
   };
 

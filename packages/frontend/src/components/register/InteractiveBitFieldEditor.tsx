@@ -154,7 +154,7 @@ export function InteractiveBitFieldEditor({
       await deleteField(fieldToDelete.id);
       setFieldToDelete(null);
     } catch (e) {
-      console.error("Delete failed", e);
+      // Error handled silently
     } finally {
       setDeleteLoading(false);
     }

@@ -109,7 +109,7 @@ export const projectVersions = pgTable("project_versions", {
   description: text("description"),
   data: jsonb("data").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  createdBy: text("created_by").references(() => user.id),
+  createdBy: text("created_by").references(() => user.id, { onDelete: 'set null' }),
 });
 
 // ============================================================================

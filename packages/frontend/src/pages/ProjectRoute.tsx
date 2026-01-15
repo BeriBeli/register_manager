@@ -42,14 +42,10 @@ export function ProjectRoute() {
 
         if (member) {
           setRole(member.role);
-        } else {
-          // If not owner and not member, role remains null.
-          // Backend likely handles 403, but here we just pass through to ProjectView 
-          // which might show an error or readonly depending on how robust it is.
-          // But we strictly want to catch "viewer" role.
         }
-      } catch (err) {
-        console.error("Error checking access:", err);
+        // If not owner and not member, role remains null.
+      } catch {
+        // Error handled silently - will redirect to projects
       } finally {
         setLoading(false);
       }

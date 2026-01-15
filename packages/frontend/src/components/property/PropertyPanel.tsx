@@ -51,7 +51,7 @@ export function PropertyPanel({ entity, entityType, onClose, readOnly = false }:
       }
       setIsDirty(false);
     } catch (error) {
-      console.error("Failed to save:", error);
+      // Error handled silently
     }
   };
 

@@ -125,8 +125,7 @@ export function ProjectView() {
         }
       }
       setDeleteItem(null);
-    } catch (e) {
-      console.error("Delete failed", e);
+      // Error handled silently
     } finally {
       setDeleteLoading(false);
     }

@@ -129,7 +129,6 @@ versionRoutes.get("/:projectId", async (c) => {
 // - New IDs will be generated for all restored entities
 // - External references to old IDs will break
 // - No optimistic locking is implemented; concurrent modifications may cause data loss
-// TODO: Consider implementing updatedAt/version-based optimistic locking
 versionRoutes.post("/:projectId/:versionId/restore", async (c) => {
   const projectId = c.req.param("projectId");
   const versionId = c.req.param("versionId");
@@ -155,99 +154,104 @@ versionRoutes.post("/:projectId/:versionId/restore", async (c) => {
     return c.json({ error: "Version mismatch", code: "BAD_REQUEST" }, 400);
   }
 
-  // 2. Restore logic (Transaction)
-  // Warning: This deletes current structure and recreates it.
-  // IDs will change unless we force them, but for simplicity we let them regenerate or try to keep them if possible.
-  // However, JSON snapshot has IDs. If we re-insert with same IDs, we risk conflicts if we didn't delete everything perfectly.
-  // Safer strategy: Delete all children, then insert new ones (with NEW IDs or SAME IDs if Drizzle allows easily).
-  // Problem: If we change IDs, references in other systems (if any) break. But here everything is contained.
-  // Let's try to keep IDs from snapshot to preserve internal consistency? 
-  // Yes, if we delete first.
+  const snapshot = versionRecord.data as any;
 
-  const snapshot = versionRecord.data as any; // Typed as any for now
+  try {
+    await db.transaction(async (tx) => {
+      // A. Delete existing project content (Memory Maps cascades down)
+      await tx.delete(memoryMaps).where(eq(memoryMaps.projectId, projectId));
 
-  await db.transaction(async (tx) => {
-    // A. Delete existing project content (Memory Maps cascades down)
-    // Note: We authenticate user has access to project via middleware/logic ideally.
-    // Assuming collaboration access policy from previous task (anyone can edit).
+      // B. Re-create from snapshot with explicit field extraction
+      if (snapshot.memoryMaps && Array.isArray(snapshot.memoryMaps)) {
+        for (const mm of snapshot.memoryMaps) {
+          // Extract only the fields we need for memoryMaps table
+          const [newMm] = await tx
+            .insert(memoryMaps)
+            .values({
+              projectId: projectId,
+              name: mm.name,
+              displayName: mm.displayName || null,
+              description: mm.description || null,
+              addressUnitBits: mm.addressUnitBits || 8,
+              shared: mm.shared || false,
+            })
+            .returning();
 
-    await tx.delete(memoryMaps).where(eq(memoryMaps.projectId, projectId));
+          if (mm.addressBlocks && Array.isArray(mm.addressBlocks)) {
+            for (const ab of mm.addressBlocks) {
+              const [newAb] = await tx
+                .insert(addressBlocks)
+                .values({
+                  memoryMapId: newMm.id,
+                  name: ab.name,
+                  displayName: ab.displayName || null,
+                  description: ab.description || null,
+                  baseAddress: ab.baseAddress,
+                  range: ab.range,
+                  width: ab.width,
+                  usage: ab.usage || "register",
+                  volatile: ab.volatile || false,
+                  typeIdentifier: ab.typeIdentifier || null,
+                })
+                .returning();
 
-    // B. Re-create from snapshot
-    // We need to iterate hierarchically.
-    // snapshot.memoryMaps -> addressBlocks -> registers -> fields -> resets/enums
+              if (ab.registers && Array.isArray(ab.registers)) {
+                for (const reg of ab.registers) {
+                  const [newReg] = await tx
+                    .insert(registers)
+                    .values({
+                      parentId: newAb.id,
+                      parentType: "addressBlock",
+                      name: reg.name,
+                      displayName: reg.displayName || null,
+                      description: reg.description || null,
+                      addressOffset: reg.addressOffset,
+                      size: reg.size,
+                      volatile: reg.volatile || false,
+                      typeIdentifier: reg.typeIdentifier || null,
+                    })
+                    .returning();
 
-    if (snapshot.memoryMaps && Array.isArray(snapshot.memoryMaps)) {
-      for (const mm of snapshot.memoryMaps) {
-        // Insert Memory Map
-        const { id: oldMmId, addressBlocks: abs, ...mmData } = mm;
+                  if (reg.fields && Array.isArray(reg.fields)) {
+                    for (const fld of reg.fields) {
+                      const [newFld] = await tx
+                        .insert(fields)
+                        .values({
+                          registerId: newReg.id,
+                          name: fld.name,
+                          displayName: fld.displayName || null,
+                          description: fld.description || null,
+                          bitOffset: fld.bitOffset,
+                          bitWidth: fld.bitWidth,
+                          access: fld.access || null,
+                          modifiedWriteValue: fld.modifiedWriteValue || null,
+                          readAction: fld.readAction || null,
+                          testable: fld.testable ?? true,
+                          volatile: fld.volatile || false,
+                        })
+                        .returning();
 
-        // We can choose to keep old ID or generate new. 
-        // Keeping old ID is risky if we didn't delete properly, but we did.
-        // Let's generate NEW IDs to be safe and avoid any PK conflicts with "ghost" data or if we soft-deleted.
-        // Actually, for "Restore", it's distinct from "Revert". 
-        // Let's generate NEW IDs for everything to treat it as fresh state based on old data.
-
-        const [newMm] = await tx
-          .insert(memoryMaps)
-          .values({
-            ...mmData,
-            projectId: projectId, // Ensure it links to current project
-            // id: oldMmId // Optional: Keep ID? No, let's auto-gen.
-          })
-          .returning();
-
-        if (abs && Array.isArray(abs)) {
-          for (const ab of abs) {
-            const { id: oldAbId, registers: regs, ...abData } = ab;
-            const [newAb] = await tx
-              .insert(addressBlocks)
-              .values({
-                ...abData,
-                memoryMapId: newMm.id,
-              })
-              .returning();
-
-            if (regs && Array.isArray(regs)) {
-              for (const reg of regs) {
-                const { id: oldRegId, fields: flds, ...regData } = reg;
-                const [newReg] = await tx
-                  .insert(registers)
-                  .values({
-                    ...regData,
-                    parentId: newAb.id,
-                    parentType: "addressBlock",
-                  })
-                  .returning();
-
-                if (flds && Array.isArray(flds)) {
-                  for (const fld of flds) {
-                    const { id: oldFldId, resets: rsts, enumeratedValues: enums, ...fldData } = fld;
-                    const [newFld] = await tx
-                      .insert(fields)
-                      .values({
-                        ...fldData,
-                        registerId: newReg.id,
-                      })
-                      .returning();
-
-                    if (rsts && Array.isArray(rsts)) {
-                      for (const rst of rsts) {
-                        const { id: _, fieldId: __, ...rstData } = rst;
-                        await tx.insert(resets).values({
-                          ...rstData,
-                          fieldId: newFld.id
-                        });
+                      if (fld.resets && Array.isArray(fld.resets)) {
+                        for (const rst of fld.resets) {
+                          await tx.insert(resets).values({
+                            fieldId: newFld.id,
+                            value: rst.value,
+                            resetTypeRef: rst.resetTypeRef || "HARD",
+                            mask: rst.mask || null,
+                          });
+                        }
                       }
-                    }
 
-                    if (enums && Array.isArray(enums)) {
-                      for (const enm of enums) {
-                        const { id: _, fieldId: __, ...enmData } = enm;
-                        await tx.insert(enumeratedValues).values({
-                          ...enmData,
-                          fieldId: newFld.id
-                        });
+                      if (fld.enumeratedValues && Array.isArray(fld.enumeratedValues)) {
+                        for (const enm of fld.enumeratedValues) {
+                          await tx.insert(enumeratedValues).values({
+                            fieldId: newFld.id,
+                            name: enm.name,
+                            displayName: enm.displayName || null,
+                            value: enm.value,
+                            description: enm.description || null,
+                          });
+                        }
                       }
                     }
                   }
@@ -257,17 +261,23 @@ versionRoutes.post("/:projectId/:versionId/restore", async (c) => {
           }
         }
       }
-    }
 
-    // Update project details (name, vlnv) if they changed in snapshot?
-    // Maybe user wants to restore description too.
-    await tx.update(projects).set({
-      name: snapshot.name,
-      description: snapshot.description,
-      vlnv: snapshot.vlnv,
-      updatedAt: new Date()
-    }).where(eq(projects.id, projectId));
-  });
+      // Update project details from snapshot
+      await tx.update(projects).set({
+        name: snapshot.name,
+        description: snapshot.description,
+        vlnv: snapshot.vlnv,
+        updatedAt: new Date()
+      }).where(eq(projects.id, projectId));
+    });
 
-  return c.json({ success: true, message: "Project restored successfully" });
+    return c.json({ success: true, message: "Project restored successfully" });
+  } catch (error: any) {
+    // Error logged
+    return c.json({
+      error: "Failed to restore version",
+      code: "RESTORE_FAILED",
+      details: error.message
+    }, 500);
+  }
 });
