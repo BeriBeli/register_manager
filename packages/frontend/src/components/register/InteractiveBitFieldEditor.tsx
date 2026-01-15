@@ -14,6 +14,7 @@ interface InteractiveBitFieldEditorProps {
   onFieldClick?: (field: Field) => void;
   onAddField?: () => void;
   onRangeSelected?: (startBit: number, endBit: number) => void;
+  readOnly?: boolean;
 }
 
 const accessColors: Record<string, string> = {
@@ -30,6 +31,7 @@ export function InteractiveBitFieldEditor({
   onFieldClick,
   onAddField,
   onRangeSelected,
+  readOnly = false,
 }: InteractiveBitFieldEditorProps) {
   const { t } = useTranslation();
   const deleteField = useRegisterStore((state) => state.deleteField);
@@ -70,6 +72,7 @@ export function InteractiveBitFieldEditor({
   };
 
   const handleMouseDown = (bit: number) => {
+    if (readOnly) return;
     // Only allow starting selection on empty bits
     if (!bitToField.has(bit)) {
       setIsDragging(true);
@@ -85,6 +88,7 @@ export function InteractiveBitFieldEditor({
   };
 
   const handleMouseUp = () => {
+    if (readOnly) return;
     if (isDragging && dragStartBit !== null && currentDragBit !== null) {
       const range = getSelectionRange();
       if (range) {
@@ -239,7 +243,7 @@ export function InteractiveBitFieldEditor({
           )}
 
           {/* Hover actions */}
-          {field && isHovered && showControls && (
+          {field && isHovered && showControls && !readOnly && (
             <div className="absolute -top-8 left-0 bg-surface-800 border border-surface-600 rounded px-2 py-1 flex items-center gap-1 z-20 shadow-lg"
               onMouseDown={(e) => e.stopPropagation()}
               onMouseUp={(e) => e.stopPropagation()}
@@ -300,7 +304,7 @@ export function InteractiveBitFieldEditor({
       <div className="space-y-1">{rowElements}</div>
 
       {/* Add field button */}
-      {onAddField && (
+      {onAddField && !readOnly && (
         <button
           onClick={onAddField}
           disabled={isFull}
@@ -341,7 +345,7 @@ export function InteractiveBitFieldEditor({
         <h4 className="text-sm font-medium text-surface-300 mb-3">Fields</h4>
         {fields.length === 0 ? (
           <div className="text-center py-8 text-surface-500">
-            No fields defined. Click "Add Field" to create one.
+            {readOnly ? "No fields defined." : "No fields defined. Click \"Add Field\" to create one."}
           </div>
         ) : (
           <div className="space-y-2">
@@ -390,25 +394,27 @@ export function InteractiveBitFieldEditor({
                       <p className="text-xs text-surface-500 mt-1">{field.description}</p>
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleFieldClick(field);
-                      }}
-                      className="p-2 hover:bg-surface-700 rounded"
-                      title="Edit"
-                    >
-                      <Edit2 className="w-4 h-4 text-surface-400" />
-                    </button>
-                    <button
-                      onClick={(e) => handleDeleteFieldClick(e, field)}
-                      className="p-2 hover:bg-surface-700 rounded"
-                      title="Delete"
-                    >
-                      <Trash2 className="w-4 h-4 text-red-400" />
-                    </button>
-                  </div>
+                  {!readOnly && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleFieldClick(field);
+                        }}
+                        className="p-2 hover:bg-surface-700 rounded"
+                        title="Edit"
+                      >
+                        <Edit2 className="w-4 h-4 text-surface-400" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteFieldClick(e, field)}
+                        className="p-2 hover:bg-surface-700 rounded"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-400" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

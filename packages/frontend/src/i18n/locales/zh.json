@@ -40,7 +40,7 @@
         "no_desc_short": "无描述",
         "create_snapshot": "创建快照",
         "snapshot_desc": "保存当前状态",
-        "share": "分享"
+        "share": "协同"
     },
     "dashboard": {
         "title": "项目",
@@ -173,7 +173,11 @@
         "confirmPassword": "确认密码",
         "confirmPasswordPlaceholder": "确认您的密码",
         "loading": "请稍候...",
-        "user": "用户"
+        "user": "用户",
+        "confirm_logout": {
+            "title": "确认退出",
+            "description": "您确定要退出登录吗？"
+        }
     },
     "admin": {
         "users": {
@@ -230,7 +234,7 @@
             "title": "删除项目",
             "desc": "确定要删除项目 \"{{name}}\" 吗？"
         },
-        "share_title": "分享项目",
+        "share_title": "协同开发",
         "share_desc": "管理 {{name}} 的访问权限",
         "add_block": {
             "title": "添加地址块",
@@ -425,5 +429,13 @@
         },
         "empty_state": "选择一个项目以查看其属性",
         "hex_hint": "十六进制格式 (例如 0x00, 0x04)"
+    },
+    "search": {
+        "placeholder": "搜索地址块、寄存器、字段...",
+        "no_results": "未找到 \"{{query}}\" 的结果",
+        "start_typing": "输入以开始搜索...",
+        "navigate": "导航",
+        "select": "选择",
+        "close": "关闭"
     }
 }

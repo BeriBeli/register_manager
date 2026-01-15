@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeStore } from "../../stores/themeStore";
 import { ProjectTree } from "./ProjectTree";
 import { SettingsDialog } from "../settings/SettingsDialog";
+import { ConfirmDialog } from "../common/ConfirmDialog";
 import { useSession, signOut } from "../../lib/auth-client";
 
 const navigation = [
@@ -19,13 +20,19 @@ export function Sidebar() {
   const { data: session } = useSession();
   const isProjectView = location.pathname.startsWith("/project/");
   const [showSettings, setShowSettings] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // Extract projectId if in project view
   const projectId = isProjectView ? location.pathname.split("/")[2] : null;
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const handleConfirmLogout = async () => {
     await signOut();
     navigate("/auth");
+    setShowLogoutConfirm(false);
   };
 
   return (
@@ -146,7 +153,7 @@ export function Sidebar() {
                   <Settings className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={handleLogout}
+                  onClick={handleLogoutClick}
                   className="p-1.5 rounded-md text-surface-400 hover:text-red-400 hover:bg-surface-700 transition-colors"
                   title={t("auth.logout")}
                 >
@@ -162,6 +169,18 @@ export function Sidebar() {
       {showSettings && (
         <SettingsDialog onClose={() => setShowSettings(false)} />
       )}
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleConfirmLogout}
+        title={t("auth.confirm_logout.title")}
+        description={t("auth.confirm_logout.description")}
+        confirmText={t("auth.logout")}
+        cancelText={t("common.cancel")}
+        variant="danger"
+      />
     </>
   );
 }

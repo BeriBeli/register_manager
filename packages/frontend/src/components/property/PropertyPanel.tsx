@@ -12,9 +12,10 @@ interface PropertyPanelProps {
   entity: EditableEntity;
   entityType: EntityType;
   onClose?: () => void;
+  readOnly?: boolean;
 }
 
-export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProps) {
+export function PropertyPanel({ entity, entityType, onClose, readOnly = false }: PropertyPanelProps) {
   const { t } = useTranslation();
   const updateRegister = useRegisterStore((state) => state.updateRegister);
   const updateField = useRegisterStore((state) => state.updateField);
@@ -25,9 +26,12 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
   const [isDirty, setIsDirty] = useState(false);
 
   const handleChange = (field: string, value: any) => {
+    if (readOnly) return;
     setFormData({ ...formData, [field]: value });
     setIsDirty(true);
   };
+
+
 
   const handleSave = async () => {
     if (!entity || !isDirty) return;
@@ -228,6 +232,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 checked={formData.volatile || false}
                 onChange={(e) => handleChange("volatile", e.target.checked)}
                 className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-primary-600"
+                disabled={readOnly}
               />
               <label htmlFor="register-volatile" className="text-sm text-surface-300">
                 {t('property.labels.volatile')}
@@ -244,6 +249,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 onChange={(e) => handleChange("typeIdentifier", e.target.value)}
                 className="input text-sm"
                 placeholder={t('property.placeholders.optional')}
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -265,6 +271,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                   onChange={(e) => handleChange("bitOffset", parseInt(e.target.value) || 0)}
                   className="input text-sm font-mono"
                   min={0}
+                  disabled={readOnly}
                 />
               </div>
 
@@ -278,6 +285,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                   onChange={(e) => handleChange("bitWidth", parseInt(e.target.value) || 1)}
                   className="input text-sm font-mono"
                   min={1}
+                  disabled={readOnly}
                 />
               </div>
             </div>
@@ -297,6 +305,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 checked={formData.volatile || false}
                 onChange={(e) => handleChange("volatile", e.target.checked)}
                 className="w-4 h-4 rounded border-surface-600 bg-surface-800 text-primary-600"
+                disabled={readOnly}
               />
               <label htmlFor="field-volatile" className="text-sm text-surface-300">
                 {t('property.labels.volatile')}
@@ -313,6 +322,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
                 onChange={(e) => handleChange("typeIdentifier", e.target.value)}
                 className="input text-sm"
                 placeholder={t('property.placeholders.optional')}
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -343,7 +353,7 @@ export function PropertyPanel({ entity, entityType, onClose }: PropertyPanelProp
       </div>
 
       {/* Footer */}
-      {isDirty && (
+      {isDirty && !readOnly && (
         <div className="p-4 border-t border-surface-700 bg-surface-900/50">
           <div className="flex items-center justify-between">
             <span className="text-xs text-surface-400">{t('property.actions.unsaved_changes')}</span>

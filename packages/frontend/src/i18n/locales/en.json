@@ -40,7 +40,7 @@
         "no_desc_short": "No description",
         "create_snapshot": "Create Snapshot",
         "snapshot_desc": "Save current project state",
-        "share": "Share"
+        "share": "Collaborate"
     },
     "dashboard": {
         "title": "Projects",
@@ -173,7 +173,11 @@
         "confirmPassword": "Confirm Password",
         "confirmPasswordPlaceholder": "Confirm your password",
         "loading": "Please wait...",
-        "user": "User"
+        "user": "User",
+        "confirm_logout": {
+            "title": "Confirm Logout",
+            "description": "Are you sure you want to log out?"
+        }
     },
     "admin": {
         "users": {
@@ -230,7 +234,7 @@
             "title": "Delete Project",
             "desc": "Are you sure you want to delete project \"{{name}}\"?"
         },
-        "share_title": "Share Project",
+        "share_title": "Project Collaboration",
         "share_desc": "Manage access for {{name}}",
         "add_block": {
             "title": "Add Address Block",
@@ -425,5 +429,13 @@
         },
         "empty_state": "Select an item to view its properties",
         "hex_hint": "Hex format (e.g., 0x00, 0x04)"
+    },
+    "search": {
+        "placeholder": "Search address blocks, registers, fields...",
+        "no_results": "No results found for \"{{query}}\"",
+        "start_typing": "Type to start searching...",
+        "navigate": "to navigate",
+        "select": "to select",
+        "close": "to close"
     }
 }

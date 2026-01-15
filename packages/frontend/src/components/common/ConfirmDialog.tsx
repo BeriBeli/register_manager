@@ -53,8 +53,8 @@ export function ConfirmDialog({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
+        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
           <Dialog.Content className="pointer-events-auto w-[90vw] max-w-[450px] rounded-xl bg-surface-900 border border-surface-800 p-6 shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
             <div className="flex flex-col gap-4">
               <div className="flex items-start gap-4">

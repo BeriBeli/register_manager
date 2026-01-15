@@ -2,32 +2,21 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RegisterTable } from "../components/register/RegisterTable";
 import { InteractiveBitFieldEditor } from "../components/register/InteractiveBitFieldEditor";
-import { RegisterDialog } from "../components/register/RegisterDialog";
-import { FieldDialog } from "../components/register/FieldDialog";
-import { FieldEditDialog } from "../components/register/FieldEditDialog";
 import { AddressBlockTable } from "../components/address/AddressBlockTable";
 import { PropertyPanel } from "../components/property/PropertyPanel";
 import { ExportDialog } from "../components/export/ExportDialog";
-import { CreateAddressBlockDialog } from "../components/project/CreateAddressBlockDialog";
-import { AddressBlockDialog } from "../components/project/AddressBlockDialog";
 import { useRegisterStore } from "../stores/registerStore";
-import { Download, Plus, Loader2, Settings as SettingsIcon, ChevronRight, History as HistoryIcon, Save, Users, MoreVertical, Search } from "lucide-react";
-import type { Field, Register, AddressBlock } from "@register-manager/shared";
+import { Download, Loader2, Settings as SettingsIcon, ChevronRight, MoreVertical, Search } from "lucide-react";
 import { parseNumber } from "@register-manager/shared";
 import { useTranslation } from "react-i18next";
-import { ConfirmDialog } from "../components/common/ConfirmDialog";
-import { CreateVersionDialog } from "../components/version/CreateVersionDialog";
-import { ShareDialog } from "../components/project/ShareDialog";
 import { GlobalSearchDialog } from "../components/project/GlobalSearchDialog";
 
-export function ProjectView() {
+export function ProjectViewer() {
   const { t } = useTranslation();
   const { id } = useParams();
   const currentProject = useRegisterStore((state) => state.currentProject);
   const isLoading = useRegisterStore((state) => state.isLoading);
   const fetchProject = useRegisterStore((state) => state.fetchProject);
-  const deleteRegister = useRegisterStore((state) => state.deleteRegister);
-  const deleteAddressBlock = useRegisterStore((state) => state.deleteAddressBlock);
   const selectedRegister = useRegisterStore((state) => state.selectedRegister);
   const setSelectedRegister = useRegisterStore((state) => state.setSelectedRegister);
   const selectedAddressBlockId = useRegisterStore((state) => state.selectedAddressBlockId);
@@ -36,27 +25,10 @@ export function ProjectView() {
   const setSelectedMemoryMapId = useRegisterStore((state) => state.setSelectedMemoryMapId);
   const error = useRegisterStore((state) => state.error);
 
-  // Delete State
-  const [deleteItem, setDeleteItem] = useState<{
-    id: string;
-    type: "register" | "addressBlock";
-    name: string;
-  } | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
-  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
-  const [showFieldDialog, setShowFieldDialog] = useState(false);
-  const [editingField, setEditingField] = useState<Field | null>(null);
-  const [newFieldInitialData, setNewFieldInitialData] = useState<{ offset: number; width: number } | null>(null);
-  const [editingRegister, setEditingRegister] = useState<Register | null>(null);
-  const [currentAddressBlockId, setCurrentAddressBlockId] = useState<string | null>(null);
-  const [selectedRegisterId, setSelectedRegisterId] = useState<string | null>(null);
-  const [showPropertyPanel, setShowPropertyPanel] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [showCreateVersionDialog, setShowCreateVersionDialog] = useState(false);
-  const [showShareDialog, setShowShareDialog] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showPropertyPanel, setShowPropertyPanel] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,119 +41,24 @@ export function ProjectView() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // New state for Address Block Editing
-  const [editingAddressBlock, setEditingAddressBlock] = useState<AddressBlock | null>(null);
-  const [showAddressBlockDialog, setShowAddressBlockDialog] = useState(false);
-  const [targetMemoryMapId, setTargetMemoryMapId] = useState<string | null>(null);
-
   // Determine active address block and registers (Moved up to be available for handlers)
   const activeMemoryMap = currentProject?.memoryMaps?.find(mm => mm.id === selectedMemoryMapId);
   const allAddressBlocks = currentProject?.memoryMaps?.flatMap(mm => mm.addressBlocks || []) || [];
   const currentAddressBlock = allAddressBlocks.find(ab => ab.id === selectedAddressBlockId);
   const registers = currentAddressBlock?.registers || [];
 
-  const handleEditRegister = (register: Register) => {
-    setEditingRegister(register);
-    setShowRegisterDialog(true);
-  };
-
-  const handleCloseRegisterDialog = () => {
-    setShowRegisterDialog(false);
-    setEditingRegister(null);
-  };
-
-  const handleDeleteRegister = (id: string) => {
-    const reg = registers.find(r => r.id === id);
-    if (reg) {
-      setDeleteItem({ id, type: "register", name: reg.name });
-    }
-  };
-
-  const handleEditAddressBlock = (block: AddressBlock) => {
-    setEditingAddressBlock(block);
-    setShowAddressBlockDialog(true);
-  };
-
-  const handleDeleteAddressBlock = (id: string) => {
-    const block = allAddressBlocks.find(ab => ab.id === id);
-    if (block) {
-      setDeleteItem({ id, type: "addressBlock", name: block.name });
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteItem) return;
-    setDeleteLoading(true);
-    try {
-      if (deleteItem.type === "register") {
-        await deleteRegister(deleteItem.id);
-      } else {
-        await deleteAddressBlock(deleteItem.id);
-        if (currentAddressBlockId === deleteItem.id) {
-          setCurrentAddressBlockId(null);
-          if (selectedAddressBlockId === deleteItem.id) {
-            setSelectedAddressBlockId(null);
-          }
-        }
-      }
-      setDeleteItem(null);
-    } catch (e) {
-      console.error("Delete failed", e);
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const handleCreateAddressBlock = (memoryMapId: string) => {
-    setTargetMemoryMapId(memoryMapId);
-    setEditingAddressBlock(null);
-    setShowAddressBlockDialog(true);
-  };
-
   // Determine display register (for editor)
-  const displayRegister = selectedRegister || registers.find((r: Register) => r.id === selectedRegisterId) || registers[0];
-
-  const handleRangeSelected = (startBit: number, endBit: number) => {
-    if (displayRegister) {
-      setSelectedRegister(displayRegister);
-      setNewFieldInitialData({
-        offset: startBit,
-        width: endBit - startBit + 1
-      });
-      setEditingField(null); // Ensure not in edit mode
-      setShowFieldDialog(true);
-    }
-  };
+  // const displayRegister = selectedRegister || registers.find((r: Register) => r.id === selectedRegisterId) || registers[0]; // Not really needed if we only show selectedRegister
 
   useEffect(() => {
-    if (id) {
+    if (id && currentProject?.id !== id) {
       fetchProject(id);
     }
-  }, [id, fetchProject]);
+  }, [id, fetchProject, currentProject?.id]);
 
   if (error) return <div className="h-full flex items-center justify-center text-red-500">Error: {error}</div>;
   if (isLoading && !currentProject) return <div className="h-full flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary-400" /></div>;
   if (!currentProject) return <div className="h-full flex items-center justify-center"><p className="text-surface-400">Project not found</p></div>;
-
-  const handleAddRegister = () => {
-    if (currentAddressBlock) {
-      setCurrentAddressBlockId(currentAddressBlock.id);
-      setShowRegisterDialog(true);
-    }
-  };
-
-  const handleAddField = () => {
-    if (displayRegister) {
-      setSelectedRegister(displayRegister);
-      setNewFieldInitialData(null);
-      setEditingField(null);
-      setShowFieldDialog(true);
-    }
-  };
-
-  const handleFieldClick = (field: Field) => {
-    setEditingField(field);
-  };
 
   // Breadcrumbs Component
   const Breadcrumbs = () => (
@@ -267,9 +144,8 @@ export function ProjectView() {
                 registerId={selectedRegister.id}
                 fields={selectedRegister.fields || []}
                 registerSize={selectedRegister.size}
-                onFieldClick={handleFieldClick}
-                onAddField={handleAddField}
-                onRangeSelected={handleRangeSelected}
+                readOnly={true}
+                onFieldClick={() => { }} // Could show details modal
               />
             </div>
           </div>
@@ -286,16 +162,7 @@ export function ProjectView() {
               <h2 className="font-medium text-surface-200">{t("project_view.registers_title")}</h2>
               <p className="text-surface-400 text-xs mt-0.5">{t("project_view.registers_desc", { name: currentAddressBlock.name })}</p>
             </div>
-            <button
-              onClick={() => {
-                setCurrentAddressBlockId(currentAddressBlock.id);
-                setShowRegisterDialog(true);
-              }}
-              className="btn-primary shadow-lg shadow-primary-500/20"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("project_view.add_register")}
-            </button>
+            {/* Read only: No Add Register Button */}
           </div>
 
           {registers.length > 0 ? (
@@ -305,8 +172,7 @@ export function ProjectView() {
                 onSelect={(reg) => {
                   setSelectedRegister(reg);
                 }}
-                onEdit={handleEditRegister}
-                onDelete={handleDeleteRegister}
+              // ReadOnly: No onEdit/onDelete
               />
             </div>
           ) : (
@@ -316,13 +182,6 @@ export function ProjectView() {
               </div>
               <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_registers_title")}</h3>
               <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_registers_desc")}</p>
-              <button onClick={() => {
-                setCurrentAddressBlockId(currentAddressBlock.id);
-                setShowRegisterDialog(true);
-              }} className="btn-primary">
-                <Plus className="w-4 h-4 mr-2" />
-                {t("project_view.create_first_register")}
-              </button>
             </div>
           )}
         </div>
@@ -331,47 +190,35 @@ export function ProjectView() {
 
     // 3. Memory Map View (Address Blocks List)
     if (activeMemoryMap) {
-      return <div className="overflow-hidden card bg-surface-900 flex flex-col max-h-full">
-        <div className="p-4 border-b border-surface-700 flex items-center justify-between shrink-0">
-          <div>
-            <h2 className="font-medium text-surface-200">{t("project_view.blocks_title")}</h2>
-            <p className="text-surface-400 text-xs mt-0.5">{t("project_view.blocks_desc", { name: activeMemoryMap.name })}</p>
-          </div>
-          <button
-            onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
-            className="btn-primary shadow-lg shadow-primary-500/20"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t("project_view.add_block")}
-          </button>
-        </div>
-
-        {activeMemoryMap.addressBlocks && activeMemoryMap.addressBlocks.length > 0 ? (
-          <div className="overflow-auto">
-            <AddressBlockTable
-              addressBlocks={activeMemoryMap.addressBlocks}
-              onSelect={(block) => setSelectedAddressBlockId(block.id)}
-              onEdit={handleEditAddressBlock}
-              onDelete={handleDeleteAddressBlock}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
-            <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
-              <SettingsIcon className="w-8 h-8 opacity-50" />
+      return (
+        <div className="overflow-hidden card bg-surface-900 flex flex-col max-h-full">
+          <div className="p-4 border-b border-surface-700 flex items-center justify-between shrink-0">
+            <div>
+              <h2 className="font-medium text-surface-200">{t("project_view.blocks_title")}</h2>
+              <p className="text-surface-400 text-xs mt-0.5">{t("project_view.blocks_desc", { name: activeMemoryMap.name })}</p>
             </div>
-            <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_blocks_title")}</h3>
-            <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_blocks_desc")}</p>
-            <button
-              onClick={() => handleCreateAddressBlock(activeMemoryMap.id)}
-              className="btn-primary"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t("project_view.create_first_block")}
-            </button>
+            {/* ReadOnly: No Add Block Button */}
           </div>
-        )}
-      </div>
+
+          {activeMemoryMap.addressBlocks && activeMemoryMap.addressBlocks.length > 0 ? (
+            <div className="overflow-auto">
+              <AddressBlockTable
+                addressBlocks={activeMemoryMap.addressBlocks}
+                onSelect={(block) => setSelectedAddressBlockId(block.id)}
+              // ReadOnly
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-12 text-center bg-surface-900/50">
+              <div className="w-16 h-16 rounded-full bg-surface-800 flex items-center justify-center mb-4 text-surface-400">
+                <SettingsIcon className="w-8 h-8 opacity-50" />
+              </div>
+              <h3 className="text-lg font-medium text-surface-200 mb-2">{t("project_view.no_blocks_title")}</h3>
+              <p className="text-surface-400 mb-6 max-w-sm">{t("project_view.no_blocks_desc")}</p>
+            </div>
+          )}
+        </div>
+      );
     }
 
     // 4. Project Root View
@@ -403,30 +250,6 @@ export function ProjectView() {
             <div className="card p-8 border-surface-700/50 shadow-sm">
               <h3 className="text-xl font-medium text-surface-100 mb-6">{t("project_view.quick_actions")}</h3>
               <div className="grid grid-cols-1 gap-4">
-                <button
-                  className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
-                  onClick={() => setShowShareDialog(true)}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-surface-900 flex items-center justify-center text-primary-400 group-hover:text-primary-300">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{t("project_view.share")}</div>
-                    <div className="text-sm text-surface-400 mt-0.5">{t("project.share_desc", { name: currentProject.name })}</div>
-                  </div>
-                </button>
-                <button
-                  className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
-                  onClick={() => setShowCreateVersionDialog(true)}
-                >
-                  <div className="w-10 h-10 rounded-lg bg-surface-900 flex items-center justify-center text-primary-400 group-hover:text-primary-300">
-                    <Save className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-medium">{t("project_view.create_snapshot")}</div>
-                    <div className="text-sm text-surface-400 mt-0.5">{t("project_view.snapshot_desc")}</div>
-                  </div>
-                </button>
                 <button
                   className="bg-surface-800 hover:bg-surface-700 border border-surface-700 text-surface-200 p-4 rounded-xl flex items-center gap-4 transition-all hover:scale-[1.01] hover:border-primary-500/50 group text-left"
                   onClick={() => setShowExportDialog(true)}
@@ -461,20 +284,6 @@ export function ProjectView() {
 
   return (
     <div className="h-full flex flex-col bg-surface-950">
-      <ConfirmDialog
-        isOpen={!!deleteItem}
-        onClose={() => setDeleteItem(null)}
-        onConfirm={handleConfirmDelete}
-        title={deleteItem?.type === "register" ? t("project.delete_register.title") : t("project.delete_block.title")}
-        description={deleteItem?.type === "register"
-          ? t("project.delete_register.desc", { name: deleteItem?.name })
-          : t("project.delete_block.desc", { name: deleteItem?.name })
-        }
-        confirmText={t("common.delete")}
-        cancelText={t("common.cancel")}
-        variant="danger"
-        isLoading={deleteLoading}
-      />
 
       {/* Top Bar - Clean & Minimal */}
       <div className="h-16 border-b border-surface-700/50 bg-surface-900/80 backdrop-blur-sm flex items-center justify-between px-8 shrink-0 relative z-10">
@@ -509,15 +318,6 @@ export function ProjectView() {
             <Search className="w-4 h-4" />
           </button>
 
-          <button
-            onClick={() => setShowShareDialog(true)}
-            className="btn-secondary rounded-lg border-surface-600 hover:border-surface-500 text-surface-200"
-            title={t("project_view.share")}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            {t("project_view.share")}
-          </button>
-
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -531,16 +331,6 @@ export function ProjectView() {
                 <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
                 <div className="absolute right-0 mt-2 w-56 rounded-xl border border-surface-700 bg-surface-800 shadow-xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="p-1.5 space-y-0.5">
-                    <button
-                      onClick={() => {
-                        setShowCreateVersionDialog(true);
-                        setShowMenu(false);
-                      }}
-                      className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-surface-200 hover:bg-surface-700/50 hover:text-white transition-colors flex items-center gap-3"
-                    >
-                      <Save className="w-4 h-4 text-primary-400" />
-                      {t("versions.create")}
-                    </button>
                     <button
                       onClick={() => {
                         setShowExportDialog(true);
@@ -583,84 +373,18 @@ export function ProjectView() {
               entity={currentProject}
               entityType="project"
               onClose={() => setShowPropertyPanel(false)}
+              readOnly={true} // Need to support this in PropertyPanel if we want it to be readonly, or just accept it's editable global properties. But viewers likely shouldn't edit project properties.
+            // We'll leave it for now, assuming api blocks it.
             />
           </div>
         )}
       </div>
-
-      {/* Dialogs */}
-      {showRegisterDialog && currentAddressBlockId && (
-        <RegisterDialog
-          addressBlockId={currentAddressBlockId}
-          onClose={(newId) => {
-            handleCloseRegisterDialog();
-            if (newId) {
-              setSelectedRegisterId(newId);
-            }
-          }}
-          editingRegister={editingRegister}
-        />
-      )}
-
-      {showFieldDialog && displayRegister && (
-        <FieldDialog
-          registerId={selectedRegisterId || displayRegister.id}
-          registerSize={displayRegister.size}
-          initialBitOffset={newFieldInitialData?.offset}
-          initialBitWidth={newFieldInitialData?.width}
-          onClose={() => setShowFieldDialog(false)}
-        />
-      )}
-
-      {editingField && displayRegister && (
-        <FieldEditDialog
-          field={editingField}
-          registerSize={displayRegister.size}
-          onClose={() => setEditingField(null)}
-        />
-      )}
 
       {showExportDialog && (
         <ExportDialog
           projectId={currentProject.id}
           projectName={currentProject.name}
           onClose={() => setShowExportDialog(false)}
-        />
-      )}
-
-      {showCreateVersionDialog && (
-        <CreateVersionDialog
-          projectId={currentProject.id}
-          onClose={() => setShowCreateVersionDialog(false)}
-          onSuccess={() => {
-            // Optional: Show success notification
-          }}
-        />
-      )}
-
-      {/* Address Block Dialog (Create & Edit) */}
-      {showAddressBlockDialog && (
-        <AddressBlockDialog
-          memoryMapId={targetMemoryMapId || undefined}
-          initialData={editingAddressBlock || undefined}
-          onClose={(newId) => {
-            setShowAddressBlockDialog(false);
-            setEditingAddressBlock(null);
-            setTargetMemoryMapId(null);
-            if (newId) {
-              if (!editingAddressBlock) {
-                setSelectedAddressBlockId(newId);
-              }
-            }
-          }}
-        />
-      )}
-
-      {showShareDialog && (
-        <ShareDialog
-          projectId={currentProject.id}
-          projectName={currentProject.name}
-          onClose={() => setShowShareDialog(false)}
         />
       )}
 
