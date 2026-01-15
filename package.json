@@ -16,6 +16,7 @@
     "db:seed": "bun run --filter @register-manager/backend db:seed",
     "db:studio": "bun run --filter @register-manager/backend db:studio",
     "db:import": "bun run --filter @register-manager/backend db:import",
+    "auth:secret": "bun run --filter @register-manager/backend auth:secret",
     "test": "bun run --filter '*' test",
     "lint": "bun run --filter '*' lint",
     "clean": "rm -rf node_modules packages/*/node_modules packages/*/dist",
