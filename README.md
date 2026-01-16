@@ -94,9 +94,25 @@ bun run dev
 
 The plugin system allows you to **customize import/export logic** for different register formats. Since every company or project may have unique Excel/data formats, WASM plugins provide a flexible way to adapt the tool to your specific needs.
 
-We provide some example implementations to suit different needs:
+#### Supported Languages
 
-#### Example 1: Rust-based Parser
+The WASM plugin system supports languages that can compile to WebAssembly:
+- ✅ **Rust** (Recommended) - Best tooling with `wasm-bindgen`, excellent performance
+- ✅ **C/C++** - Via Emscripten or wasm32 target
+- ✅ **Go** - Via TinyGo for smaller binaries
+- ✅ **AssemblyScript** - TypeScript-like syntax, designed for WASM
+- ✅ **Zig** - Native WASM support with small footprint
+
+#### Plugin Requirements
+
+Your plugin must:
+1. **Export a parsing function** with signature: `parse_excel(fileBytes: Uint8Array) -> ImportData`
+2. **Compile to `.wasm`** binary format
+3. **Generate JS glue code** for browser integration (e.g., via `wasm-bindgen` for Rust)
+4. **Return data** conforming to the `ImportData` schema (see `packages/shared/src/types/import.ts`)
+
+#### Example: Rust-based Parser
+
 ```bash
 # Build WASM and generate JS glue code
 bun run plugin:build
@@ -104,6 +120,7 @@ bun run plugin:build
 The output is in `examples/parser_plugin_rust/pkg/` directory.
 - **Dynamic Mode**: Upload `pkg/parser_plugin_rust_bg.wasm` (Binary) and `pkg/parser_plugin_rust.js` (JS Glue) via the Admin UI to enable the plugin instantly.
 - **Best for**: Production use, performance-critical applications, small bundle size (~200KB)
+- **Source**: See `examples/parser_plugin_rust/` for full implementation
 
 ## Project Structure
 

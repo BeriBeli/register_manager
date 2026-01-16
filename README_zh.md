@@ -94,9 +94,25 @@ bun run dev
 
 插件系统允许您**客制化导入/导出逻辑**以适配不同的寄存器格式。由于每个公司或项目可能有独特的 Excel/数据格式，WASM 插件提供了一种灵活的方式来使工具适应您的特定需求。
 
-我们提供一些示例实现以满足不同需求：
+#### 支持的语言
 
-#### 示例 1：基于 Rust 的解析器
+WASM 插件系统支持可以编译为 WebAssembly 的语言：
+- ✅ **Rust** (推荐) - 通过 `wasm-bindgen` 提供最佳工具链支持，性能优异
+- ✅ **C/C++** - 通过 Emscripten 或 wasm32 target
+- ✅ **Go** - 通过 TinyGo 生成较小的二进制文件
+- ✅ **AssemblyScript** - TypeScript 风格语法，专为 WASM 设计
+- ✅ **Zig** - 原生支持 WASM，体积小巧
+
+#### 插件要求
+
+您的插件必须：
+1. **导出解析函数**，签名如：`parse_excel(fileBytes: Uint8Array) -> ImportData`
+2. **编译为 `.wasm`** 二进制格式
+3. **生成 JS 胶水代码** 以供浏览器集成（例如 Rust 的 `wasm-bindgen`）
+4. **返回数据** 符合 `ImportData` 数据结构（见 `packages/shared/src/types/import.ts`）
+
+#### 示例：基于 Rust 的解析器
+
 ```bash
 # 构建 WASM 并生成 JS 胶水代码
 bun run plugin:build
@@ -104,6 +120,7 @@ bun run plugin:build
 输出文件位于 `examples/parser_plugin_rust/pkg/` 目录。
 - **动态模式**: 通过管理后台上传 `pkg/parser_plugin_rust_bg.wasm` (二进制) 和 `pkg/parser_plugin_rust.js` (JS 胶水代码)，即可立即启用插件。
 - **适用于**: 生产环境、性能关键应用、小包体积 (~200KB)
+- **源码**: 见 `examples/parser_plugin_rust/` 目录获取完整实现
 
 ## 项目结构
 
