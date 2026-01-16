@@ -81,39 +81,39 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
 
 
 
+  // Helper to get API base URL
+  const getApiBaseUrl = () => {
+    // In development, API runs on port 3000
+    // In production, API is served from the same origin
+    if (import.meta.env.DEV) {
+      return 'http://localhost:3000';
+    }
+    return window.location.origin;
+  };
+
   // Parse file using WASM plugin
   const parseFile = async (): Promise<ImportData | null> => {
     if (!selectedFile || !selectedPlugin) return null;
 
     try {
-      // Find the selected plugin to get its path (although we might need the full URL)
-      // The plugin object usually has a wasmPath relative to uploads.
-      // We need to construct the full URL.
+      // Find the selected plugin to get its path
       const plugin = plugins.find(p => p.id === selectedPlugin);
       if (!plugin) throw new Error(t("import.errors.plugin_not_found"));
 
-      // Construct URL: /uploads/plugins/filename
-      // The backend serves uploads statically.
-      // We need the filename from the path.
-      // Assuming plugin.wasmPath is like "uploads\plugins\uuid-name.wasm" or just filename?
-      // Let's check the backend logic. In plugins.ts, used `path.join("uploads", "plugins", filename)`.
-      // The db stores the relative path?
-      // I'll assume I need to fetch from `/api/uploads` or similar if `serveStatic` is set.
-      // Backend index.ts: app.use("/uploads/*", serveStatic({ root: "./uploads" }))
-      // So if path is "uploads/plugins/file.wasm", URL is "/uploads/plugins/file.wasm".
-      // But verify what `plugin.wasmPath` contains. It likely contains the relative path stored in DB.
+      const apiBaseUrl = getApiBaseUrl();
 
+      // Construct WASM URL
       let wasmUrl = "";
       if (plugin.wasmUrl) {
-        if (plugin.wasmUrl.startsWith("http") || plugin.wasmUrl.startsWith("/")) {
+        if (plugin.wasmUrl.startsWith("http")) {
           wasmUrl = plugin.wasmUrl;
         } else {
-          // Normalize path separators and add leading slash
+          // Normalize path separators and ensure leading slash
           const normalizedPath = plugin.wasmUrl.replace(/\\/g, "/");
-          wasmUrl = `/${normalizedPath}`;
+          const path = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
+          wasmUrl = `${apiBaseUrl}${path}`;
         }
       } else {
-        // Fallback if wasmUrl is missing but it's a wasm plugin?
         throw new Error("Plugin has no WASM URL");
       }
 
@@ -128,12 +128,16 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
 
       // Check if plugin has custom JS
       if (plugin.jsUrl) {
-        let jsUrl = plugin.jsUrl;
-        if (!jsUrl.startsWith("http") && !jsUrl.startsWith("/")) {
-          jsUrl = `/${jsUrl.replace(/\\/g, "/")}`;
+        // Construct JS URL
+        let jsUrl = "";
+        if (plugin.jsUrl.startsWith("http")) {
+          jsUrl = plugin.jsUrl;
+        } else {
+          const normalizedPath = plugin.jsUrl.replace(/\\/g, "/");
+          const path = normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`;
+          jsUrl = `${apiBaseUrl}${path}`;
         }
         const jsUrlWithCache = jsUrl.includes('?') ? `${jsUrl}&t=${timestamp}` : `${jsUrl}?t=${timestamp}`;
-
 
         const module = await import(/* @vite-ignore */ jsUrlWithCache);
 
