@@ -113,7 +113,7 @@ app.route("/api/import", importRoutes);
 app.route("/api/plugins", pluginRoutes);
 
 // Static file serving for uploads (plugins)
-app.use("/uploads/*", serveStatic({ root: "./" }));
+app.use("/uploads/*", serveStatic({ root: "./uploads" }));
 
 // Custom Admin Routes (Admin Plugin handles list, delete, etc.)
 // We only keep custom logic like 'approve' that isn't standard in the plugin
