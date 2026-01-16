@@ -42,3 +42,8 @@ jobs:
         run: wasm-bindgen --target web --out-dir pkg --out-name parser_plugin_rust --typescript target/wasm32-unknown-unknown/release/parser_plugin_rust.wasm
         working-directory: examples/parser_plugin_rust
 
+      - name: Verify Artifacts & Zip
+        run: |
+          cd examples/parser_plugin_rust/pkg
+          zip -r ../../../parser_plugin_rust.zip .
+          test -f ../../../parser_plugin_rust.zip

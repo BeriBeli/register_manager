@@ -34,10 +34,16 @@ jobs:
         run: wasm-bindgen --target web --out-dir pkg --out-name parser_plugin_rust --typescript target/wasm32-unknown-unknown/release/parser_plugin_rust.wasm
         working-directory: examples/parser_plugin_rust
 
+      - name: Create Release Zip
+        run: |
+          cd examples/parser_plugin_rust/pkg
+          zip -r ../../../parser_plugin_rust.zip .
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
+            parser_plugin_rust.zip
             examples/parser_plugin_rust/pkg/parser_plugin_rust.js
             examples/parser_plugin_rust/pkg/parser_plugin_rust_bg.wasm
             examples/parser_plugin_rust/pkg/parser_plugin_rust.d.ts
