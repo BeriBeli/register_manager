@@ -1,4 +1,4 @@
-use register_excel_parser::parse_excel_to_import_data;
+use parser_plugin_rust::parse_excel_to_import_data;
 
 #[test]
 fn parses_example_workbook_to_import_data() {
