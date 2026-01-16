@@ -79,14 +79,16 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
     e.preventDefault();
   };
 
-
-
   // Helper to get API base URL
   const getApiBaseUrl = () => {
+    const configuredApiUrl = import.meta.env.VITE_API_URL;
+    if (configuredApiUrl) {
+      return configuredApiUrl;
+    }
     // In development, API runs on port 3000
     // In production, API is served from the same origin
     if (import.meta.env.DEV) {
-      return 'http://localhost:3000';
+      return "http://localhost:3000";
     }
     return window.location.origin;
   };
@@ -188,12 +190,32 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
           }
         }
 
-        setPreviewStats({
+        const fallbackStats = {
           memoryMapCount: data.memoryMaps.length,
           addressBlockCount: data.memoryMaps.reduce((sum, mm) => sum + mm.addressBlocks.length, 0),
           registerCount,
           fieldCount,
-        });
+        };
+
+        try {
+          const validateResponse = await fetch("/api/import/validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ data }),
+          });
+          const validation = await validateResponse.json();
+          if (validation?.success) {
+            setWarnings(validation.warnings ?? []);
+            setPreviewStats(validation.stats ?? fallbackStats);
+          } else {
+            setWarnings([]);
+            setPreviewStats(fallbackStats);
+          }
+        } catch {
+          setWarnings([]);
+          setPreviewStats(fallbackStats);
+        }
 
         setStep("preview");
       }
