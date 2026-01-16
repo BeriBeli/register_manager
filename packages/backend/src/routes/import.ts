@@ -5,9 +5,8 @@ import { db } from "../db";
 import { projects, memoryMaps, addressBlocks, registers, fields, resets, plugins } from "../db/schema";
 import { auth } from "../lib/auth";
 import type {
-  ImportData,
-  ImportPlugin,
-  ImportPreviewResponse,
+    ImportData,
+    ImportPlugin,
 } from "@register-manager/shared";
 
 // Define variables type for authenticated routes
@@ -135,134 +134,134 @@ const importExecuteSchema = z.object({
  * Execute import and create project from parsed data
  */
 importRoutes.post("/execute", zValidator("json", importExecuteSchema), async (c) => {
-  const { data } = c.req.valid("json") as { data: ImportData };
-  const user = c.get("user")!;
+    const { data } = c.req.valid("json") as { data: ImportData };
+    const user = c.get("user")!;
 
-  try {
-    const newProject = await db.transaction(async (tx) => {
-        // Create project
-        const [project] = await tx
-            .insert(projects)
-            .values({
-                userId: user.id,
-                name: data.project.name,
-                displayName: data.project.displayName,
-                description: data.project.description,
-                vlnv: {
-                    vendor: data.project.vendor,
-                    library: data.project.library,
-                    name: data.project.name,
-                    version: data.project.version,
-                },
-            })
-            .returning();
-
-        // Create memory maps
-        for (const mm of data.memoryMaps) {
-            const [newMemoryMap] = await tx
-                .insert(memoryMaps)
+    try {
+        const newProject = await db.transaction(async (tx) => {
+            // Create project
+            const [project] = await tx
+                .insert(projects)
                 .values({
-                    projectId: project.id,
-                    name: mm.name,
-                    displayName: mm.displayName,
-                    description: mm.description,
-                    addressUnitBits: mm.addressUnitBits ?? 8,
+                    userId: user.id,
+                    name: data.project.name,
+                    displayName: data.project.displayName,
+                    description: data.project.description,
+                    vlnv: {
+                        vendor: data.project.vendor,
+                        library: data.project.library,
+                        name: data.project.name,
+                        version: data.project.version,
+                    },
                 })
                 .returning();
 
-            // Create address blocks
-            for (const ab of mm.addressBlocks) {
-                const [newAddressBlock] = await tx
-                    .insert(addressBlocks)
+            // Create memory maps
+            for (const mm of data.memoryMaps) {
+                const [newMemoryMap] = await tx
+                    .insert(memoryMaps)
                     .values({
-                        memoryMapId: newMemoryMap.id,
-                        name: ab.name,
-                        displayName: ab.displayName,
-                        description: ab.description,
-                        baseAddress: ab.baseAddress,
-                        range: ab.range,
-                        width: ab.width ?? 32,
-                        usage: "register",
+                        projectId: project.id,
+                        name: mm.name,
+                        displayName: mm.displayName,
+                        description: mm.description,
+                        addressUnitBits: mm.addressUnitBits ?? 8,
                     })
                     .returning();
 
-                // Create registers
-                for (const reg of ab.registers) {
-                    const [newRegister] = await tx
-                        .insert(registers)
+                // Create address blocks
+                for (const ab of mm.addressBlocks) {
+                    const [newAddressBlock] = await tx
+                        .insert(addressBlocks)
                         .values({
-                            parentId: newAddressBlock.id,
-                            parentType: "addressBlock",
-                            name: reg.name,
-                            displayName: reg.displayName,
-                            description: reg.description,
-                            addressOffset: reg.addressOffset,
-                            size: reg.size ?? 32,
+                            memoryMapId: newMemoryMap.id,
+                            name: ab.name,
+                            displayName: ab.displayName,
+                            description: ab.description,
+                            baseAddress: ab.baseAddress,
+                            range: ab.range,
+                            width: ab.width ?? 32,
+                            usage: "register",
                         })
                         .returning();
 
-                    // Create fields
-                    for (const field of reg.fields) {
-                        const [newField] = await tx
-                            .insert(fields)
+                    // Create registers
+                    for (const reg of ab.registers) {
+                        const [newRegister] = await tx
+                            .insert(registers)
                             .values({
-                                registerId: newRegister.id,
-                                name: field.name,
-                                displayName: field.displayName,
-                                description: field.description,
-                                bitOffset: field.bitOffset,
-                                bitWidth: field.bitWidth,
-                                access: field.access ?? "read-write",
+                                parentId: newAddressBlock.id,
+                                parentType: "addressBlock",
+                                name: reg.name,
+                                displayName: reg.displayName,
+                                description: reg.description,
+                                addressOffset: reg.addressOffset,
+                                size: reg.size ?? 32,
                             })
                             .returning();
 
-                        // Create reset value if provided
-                        if (field.resetValue) {
-                            await tx.insert(resets).values({
-                                fieldId: newField.id,
-                                value: field.resetValue,
-                            });
+                        // Create fields
+                        for (const field of reg.fields) {
+                            const [newField] = await tx
+                                .insert(fields)
+                                .values({
+                                    registerId: newRegister.id,
+                                    name: field.name,
+                                    displayName: field.displayName,
+                                    description: field.description,
+                                    bitOffset: field.bitOffset,
+                                    bitWidth: field.bitWidth,
+                                    access: field.access ?? "read-write",
+                                })
+                                .returning();
+
+                            // Create reset value if provided
+                            if (field.resetValue) {
+                                await tx.insert(resets).values({
+                                    fieldId: newField.id,
+                                    value: field.resetValue,
+                                });
+                            }
                         }
                     }
                 }
             }
+
+            return project;
+        });
+
+        // Calculate stats
+        let registerCount = 0;
+        let fieldCount = 0;
+        for (const mm of data.memoryMaps) {
+            for (const ab of mm.addressBlocks) {
+                registerCount += ab.registers.length;
+                for (const reg of ab.registers) {
+                    fieldCount += reg.fields.length;
+                }
+            }
         }
 
-        return project;
-    });
-
-    // Calculate stats
-    let registerCount = 0;
-    let fieldCount = 0;
-    for (const mm of data.memoryMaps) {
-      for (const ab of mm.addressBlocks) {
-        registerCount += ab.registers.length;
-        for (const reg of ab.registers) {
-          fieldCount += reg.fields.length;
-        }
-      }
+        return c.json({
+            success: true,
+            data: {
+                projectId: newProject.id,
+                projectName: newProject.name,
+                stats: {
+                    memoryMapCount: data.memoryMaps.length,
+                    addressBlockCount: data.memoryMaps.reduce((sum, mm) => sum + mm.addressBlocks.length, 0),
+                    registerCount,
+                    fieldCount,
+                },
+            },
+        }, 201);
+    } catch (error) {
+        // Error logged
+        return c.json({
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error during import",
+        }, 500);
     }
-
-    return c.json({
-      success: true,
-      data: {
-        projectId: newProject.id,
-        projectName: newProject.name,
-        stats: {
-          memoryMapCount: data.memoryMaps.length,
-          addressBlockCount: data.memoryMaps.reduce((sum, mm) => sum + mm.addressBlocks.length, 0),
-          registerCount,
-          fieldCount,
-        },
-      },
-    }, 201);
-  } catch (error) {
-    // Error logged
-    return c.json({
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error during import",
-    }, 500);
-  }
 });
 
 /**
@@ -270,72 +269,85 @@ importRoutes.post("/execute", zValidator("json", importExecuteSchema), async (c)
  * Validate import data without creating project
  */
 importRoutes.post("/validate", zValidator("json", importExecuteSchema), async (c) => {
-  const { data } = c.req.valid("json") as { data: ImportData };
-  const warnings: string[] = [];
-  const parseAddressOffset = (value: string) => {
-      const trimmed = value.trim().toLowerCase();
-      return trimmed.startsWith("0x") ? parseInt(trimmed, 16) : parseInt(trimmed, 10);
-  };
+    const { data } = c.req.valid("json") as { data: ImportData };
+    const warnings: string[] = [];
+    const parseAddressOffset = (value: string) => {
+        const trimmed = value.trim().toLowerCase();
+        const parsed = trimmed.startsWith("0x") ? parseInt(trimmed, 16) : parseInt(trimmed, 10);
+        return Number.isNaN(parsed) ? null : parsed;
+    };
 
-  // Validate project name format
-  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(data.project.name)) {
-    warnings.push(`Project name "${data.project.name}" should be a valid identifier`);
-  }
-
-  // Validate memory maps
-  for (const mm of data.memoryMaps) {
-    for (const ab of mm.addressBlocks) {
-      // Check for overlapping registers
-      const sortedRegs = [...ab.registers].sort((a, b) => {
-          const offsetA = parseAddressOffset(a.addressOffset);
-          const offsetB = parseAddressOffset(b.addressOffset);
-          return offsetA - offsetB;
-      });
-
-      for (let i = 0; i < sortedRegs.length - 1; i++) {
-        const curr = sortedRegs[i];
-        const next = sortedRegs[i + 1];
-        const currOffset = parseAddressOffset(curr.addressOffset);
-        const currSize = (curr.size ?? 32) / 8;
-        const nextOffset = parseAddressOffset(next.addressOffset);
-
-        if (currOffset + currSize > nextOffset) {
-          warnings.push(`Registers "${curr.name}" and "${next.name}" may overlap in address block "${ab.name}"`);
-        }
-      }
-
-      // Check field bit ranges within registers
-      for (const reg of ab.registers) {
-        const regSize = reg.size ?? 32;
-        for (const field of reg.fields) {
-          if (field.bitOffset + field.bitWidth > regSize) {
-            warnings.push(`Field "${field.name}" exceeds register size in "${reg.name}"`);
-          }
-        }
-      }
+    // Validate project name format
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(data.project.name)) {
+        warnings.push(`Project name "${data.project.name}" should be a valid identifier`);
     }
-  }
 
-  // Calculate stats
-  let registerCount = 0;
-  let fieldCount = 0;
-  for (const mm of data.memoryMaps) {
-    for (const ab of mm.addressBlocks) {
-      registerCount += ab.registers.length;
-      for (const reg of ab.registers) {
-        fieldCount += reg.fields.length;
-      }
+    // Validate memory maps
+    for (const mm of data.memoryMaps) {
+        for (const ab of mm.addressBlocks) {
+            // Check for overlapping registers
+            const sortedRegs = [...ab.registers].sort((a, b) => {
+                const offsetA = parseAddressOffset(a.addressOffset);
+                const offsetB = parseAddressOffset(b.addressOffset);
+                const normalizedA = offsetA ?? Number.MAX_SAFE_INTEGER;
+                const normalizedB = offsetB ?? Number.MAX_SAFE_INTEGER;
+                return normalizedA - normalizedB;
+            });
+
+            for (let i = 0; i < sortedRegs.length - 1; i++) {
+                const curr = sortedRegs[i];
+                const next = sortedRegs[i + 1];
+                const currOffset = parseAddressOffset(curr.addressOffset);
+                const currSize = (curr.size ?? 32) / 8;
+                const nextOffset = parseAddressOffset(next.addressOffset);
+
+                if (currOffset === null || nextOffset === null) {
+                    if (currOffset === null) {
+                        warnings.push(`Register "${curr.name}" has an invalid address offset in "${ab.name}"`);
+                    }
+                    if (nextOffset === null) {
+                        warnings.push(`Register "${next.name}" has an invalid address offset in "${ab.name}"`);
+                    }
+                    continue;
+                }
+
+                if (currOffset + currSize > nextOffset) {
+                    warnings.push(`Registers "${curr.name}" and "${next.name}" may overlap in address block "${ab.name}"`);
+                }
+            }
+
+            // Check field bit ranges within registers
+            for (const reg of ab.registers) {
+                const regSize = reg.size ?? 32;
+                for (const field of reg.fields) {
+                    if (field.bitOffset + field.bitWidth > regSize) {
+                        warnings.push(`Field "${field.name}" exceeds register size in "${reg.name}"`);
+                    }
+                }
+            }
+        }
     }
-  }
 
-  return c.json({
-    success: true,
-    warnings,
-    stats: {
-      memoryMapCount: data.memoryMaps.length,
-      addressBlockCount: data.memoryMaps.reduce((sum, mm) => sum + mm.addressBlocks.length, 0),
-      registerCount,
-      fieldCount,
-    },
-  });
+    // Calculate stats
+    let registerCount = 0;
+    let fieldCount = 0;
+    for (const mm of data.memoryMaps) {
+        for (const ab of mm.addressBlocks) {
+            registerCount += ab.registers.length;
+            for (const reg of ab.registers) {
+                fieldCount += reg.fields.length;
+            }
+        }
+    }
+
+    return c.json({
+        success: true,
+        warnings,
+        stats: {
+            memoryMapCount: data.memoryMaps.length,
+            addressBlockCount: data.memoryMaps.reduce((sum, mm) => sum + mm.addressBlocks.length, 0),
+            registerCount,
+            fieldCount,
+        },
+    });
 });
