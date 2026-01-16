@@ -20,7 +20,9 @@
     "dependencies": {
         "@hono/zod-validator": "^0.7.6",
         "@register-manager/shared": "workspace:*",
+        "@types/adm-zip": "^0.5.7",
         "@types/xml2js": "^0.4.14",
+        "adm-zip": "^0.5.16",
         "better-auth": "^1.1.0",
         "drizzle-orm": "^0.45.1",
         "fast-xml-parser": "^4.5.0",

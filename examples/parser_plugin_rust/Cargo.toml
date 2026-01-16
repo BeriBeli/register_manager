@@ -1,6 +1,6 @@
 [package]
 name = "parser_plugin_rust"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "WebAssembly plugin for parsing Excel files into Register Manager format"
 

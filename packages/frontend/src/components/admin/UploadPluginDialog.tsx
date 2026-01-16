@@ -11,40 +11,28 @@ interface UploadPluginDialogProps {
 export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogProps) {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const jsFileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [jsFile, setJsFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      if (!selectedFile.name.endsWith(".wasm")) {
+      if (!selectedFile.name.endsWith(".zip")) {
         setError(t("admin.plugins.errors.invalid_extension"));
         return;
       }
+
       setFile(selectedFile);
       setError(null);
+
       // Auto-fill name if empty
       if (!name) {
-        setName(selectedFile.name.replace(".wasm", ""));
+        setName(selectedFile.name.replace(".zip", ""));
       }
-    }
-  };
-
-  const handleJsFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      if (!selectedFile.name.endsWith(".js")) {
-        setError("Must be a .js file");
-        return;
-      }
-      setJsFile(selectedFile);
-      setError(null);
     }
   };
 
@@ -58,9 +46,6 @@ export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogPro
     try {
       const formData = new FormData();
       formData.append("file", file);
-      if (jsFile) {
-        formData.append("jsFile", jsFile);
-      }
       formData.append("name", name);
       formData.append("description", description);
 
@@ -125,10 +110,10 @@ export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogPro
             />
           </div>
 
-          {/* File Upload (WASM) */}
+          {/* File Upload (ZIP) */}
           <div>
             <label className="block text-sm font-medium text-surface-300 mb-1">
-              {t("admin.plugins.fields.file")} (.wasm)
+              Plugin Package (.zip)
             </label>
             <div
               onClick={() => fileInputRef.current?.click()}
@@ -140,7 +125,7 @@ export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogPro
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".wasm"
+                accept=".zip"
                 onChange={handleFileChange}
                 className="hidden"
               />
@@ -153,41 +138,7 @@ export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogPro
                 <div className="text-surface-500">
                   <Upload className="w-6 h-6 mx-auto mb-2" />
                   <span className="text-sm">{t("admin.plugins.click_upload")}</span>
-                  <div className="text-xs mt-1 text-surface-600">.wasm file</div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* JS File Upload (Optional) */}
-          <div>
-            <label className="block text-sm font-medium text-surface-300 mb-1">
-              JS Glue Code (.js) <span className="text-surface-500 text-xs">(Optional, for Dynamic Mode)</span>
-            </label>
-            <div
-              onClick={() => jsFileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${jsFile
-                ? "border-secondary-500 bg-secondary-500/5"
-                : "border-surface-700 hover:border-surface-600"
-                }`}
-            >
-              <input
-                ref={jsFileInputRef}
-                type="file"
-                accept=".js"
-                onChange={handleJsFileChange}
-                className="hidden"
-              />
-              {jsFile ? (
-                <div className="flex items-center justify-center gap-2 text-secondary-400">
-                  <FileCode className="w-5 h-5" />
-                  <span className="font-medium truncate max-w-[200px]">{jsFile.name}</span>
-                </div>
-              ) : (
-                <div className="text-surface-500">
-                  <Upload className="w-6 h-6 mx-auto mb-2" />
-                  <span className="text-sm">Upload .js file</span>
-                  <div className="text-xs mt-1 text-surface-600">From pkg/ directory</div>
+                  <div className="text-xs mt-1 text-surface-600">Upload plugin release package (.zip)</div>
                 </div>
               )}
             </div>
@@ -214,7 +165,7 @@ export function UploadPluginDialog({ onClose, onSuccess }: UploadPluginDialogPro
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

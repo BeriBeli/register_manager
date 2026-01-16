@@ -54,32 +54,72 @@ pluginRoutes.post("/", async (c) => {
       return c.json({ error: "Plugin name is required" }, 400);
     }
 
-    // Validate file extension
-    if (!file.name.endsWith(".wasm")) {
-      return c.json({ error: "Only .wasm files are supported for the main file" }, 400);
-    }
-
     const uploadDir = join(process.cwd(), "uploads", "plugins");
-
-    // Save WASM file
     const fileUUID = randomUUID();
-    const fileName = `${fileUUID}-${file.name}`;
-    const filePath = join(uploadDir, fileName);
-    const buffer = await file.arrayBuffer();
-    await writeFile(filePath, new Uint8Array(buffer));
-    const wasmPath = `/uploads/plugins/${fileName}`;
 
-    // Save JS file if present
-    let jsPath = undefined;
-    if (jsFile && jsFile instanceof File) {
-      if (!jsFile.name.endsWith(".js")) {
-        return c.json({ error: "Secondary file must be a .js file" }, 400);
+    let wasmPath = "";
+    let jsPath: string | undefined = undefined;
+
+    // Case 1: ZIP Upload (Unified format)
+    if (file.name.endsWith(".zip")) {
+      const AdmZip = (await import("adm-zip")).default;
+      const { mkdir } = await import("fs/promises");
+
+      const zipBuffer = await file.arrayBuffer();
+      const zip = new AdmZip(Buffer.from(zipBuffer));
+
+      const unzipDir = join(uploadDir, fileUUID);
+      await mkdir(unzipDir, { recursive: true });
+      zip.extractAllTo(unzipDir, true);
+
+      const entries = zip.getEntries();
+
+      // Find Entry JS
+      // Logic: 
+      // 1. Explicit 'index.js' or 'plugin.js'
+      // 2. Name matching zip file name
+      // 3. Any .js file
+      let jsEntry = entries.find(e => e.entryName === "index.js" || e.entryName === "plugin.js");
+      if (!jsEntry) {
+        // Try finding one that matches the name
+        jsEntry = entries.find(e => e.entryName.endsWith(".js") && !e.entryName.includes("/"));
       }
-      const jsFileName = `${fileUUID}-${jsFile.name}`;
-      const jsFilePath = join(uploadDir, jsFileName);
-      const jsBuffer = await jsFile.arrayBuffer();
-      await writeFile(jsFilePath, new Uint8Array(jsBuffer));
-      jsPath = `/uploads/plugins/${jsFileName}`;
+
+      if (!jsEntry) {
+        return c.json({ error: "Invalid plugin zip: No .js entry point found at root" }, 400);
+      }
+
+      // Find WASM (for metadata/registry)
+      // For Python plugins, this will be pyodide.asm.wasm
+      // For Rust plugins, this will be *_bg.wasm
+      const wasmEntry = entries.find(e => e.entryName.endsWith(".wasm"));
+      if (!wasmEntry) {
+        return c.json({ error: "Invalid plugin zip: No .wasm file found" }, 400);
+      }
+
+      jsPath = `/uploads/plugins/${fileUUID}/${jsEntry.entryName}`;
+      wasmPath = `/uploads/plugins/${fileUUID}/${wasmEntry.entryName}`;
+
+    } else if (file.name.endsWith(".wasm")) {
+      // Case 2: Legacy/Manual Upload (.wasm + optional .js)
+      const fileName = `${fileUUID}-${file.name}`;
+      const filePath = join(uploadDir, fileName);
+      const buffer = await file.arrayBuffer();
+      await writeFile(filePath, new Uint8Array(buffer));
+      wasmPath = `/uploads/plugins/${fileName}`;
+
+      if (jsFile && jsFile instanceof File) {
+        if (!jsFile.name.endsWith(".js")) {
+          return c.json({ error: "Secondary file must be a .js file" }, 400);
+        }
+        const jsFileName = `${fileUUID}-${jsFile.name}`;
+        const jsFilePath = join(uploadDir, jsFileName);
+        const jsBuffer = await jsFile.arrayBuffer();
+        await writeFile(jsFilePath, new Uint8Array(jsBuffer));
+        jsPath = `/uploads/plugins/${jsFileName}`;
+      }
+    } else {
+      return c.json({ error: "Only .zip or .wasm files are supported" }, 400);
     }
 
     // Save to DB
@@ -97,7 +137,7 @@ pluginRoutes.post("/", async (c) => {
 
     return c.json({ data: newPlugin }, 201);
   } catch (error) {
-    // Error logged
+    console.error("Plugin upload error:", error);
     return c.json({ error: "Failed to upload plugin" }, 500);
   }
 });
