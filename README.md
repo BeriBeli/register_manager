@@ -11,11 +11,11 @@ A high-performance, web-based register management tool compliant with IEEE 1685-
 - 📊 **Real-time Visualization** - Dynamic bit field rendering and memory map hierarchy.
 - 🗂️ **Project Management** - Organize designs into projects with versions.
 - 🔒 **Authentication** - Secure login via Email/Password (Better Auth).
-- ⚙️ **Plugin System** - Extensible architecture supporting WASM-based plugins for custom import/export logic.
+- ⚙️ **Plugin System** - Extensible WASM-based plugin architecture enabling **customization for diverse register formats** across different companies and projects.
 - ⚡ **Dynamic Loading** - Support for hot-loading plugins (WASM + JS) without recompilation.
 
 ### Data Processing ✅
-- 📥 **Excel Import** - **Powered by Rust & Polars**, offering high-performance parsing of complex Excel formats (e.g., irgen format).
+- 📥 **Excel Import** - Customizable via WASM plugins (e.g., Rust-based parser example) to handle various Excel formats specific to your organization.
 - 📤 **Multi-format Export**
   - IP-XACT XML (IEEE 1685-2022)
   - C Headers (with macros & endianness control)
@@ -35,7 +35,7 @@ Intuitive interface for managing registers and bit fields.
 ![Visual Editor](docs/images/vistual_editor.png)
 
 ### Powerful Plugin System
-Extend functionality with WASM plugins (e.g., Excel parsers).
+Customize import/export logic with WASM plugins to support your specific register formats.
 ![Plugin System](docs/images/plugin_system.png)
 
 ### Reliable Import System
@@ -92,13 +92,34 @@ bun run dev
 
 ### Plugin Development
 
-To build the Excel Parser plugin (Rust/WASM):
+The plugin system allows you to **customize import/export logic** for different register formats. Since every company or project may have unique Excel/data formats, WASM plugins provide a flexible way to adapt the tool to your specific needs.
+
+We provide two example implementations to suit different needs:
+
+#### Example 1: Rust-based Parser (High Performance)
 ```bash
 # Build WASM and generate JS glue code
 bun run plugin:build
 ```
-The output is in `pkg/` directory.
-- **Dynamic Mode**: Upload `pkg/register_excel_parser_bg.wasm` (Binary) and `pkg/register_excel_parser.js` (JS Glue) via the Admin UI to enable the plugin instantly.
+The output is in `examples/parser_plugin_rust/pkg/` directory.
+- **Dynamic Mode**: Upload `pkg/parser_plugin_rust_bg.wasm` (Binary) and `pkg/parser_plugin_rust.js` (JS Glue) via the Admin UI to enable the plugin instantly.
+- **Best for**: Production use, performance-critical applications, small bundle size (~200KB)
+
+#### Example 2: Python-based Parser (Easy Customization)
+```bash
+# Setup and deploy
+cd examples/parser_plugin_python
+uv sync
+mkdir -p dist
+cp src/parser_plugin_python/parser.py dist/
+cp wrapper.js dist/parser_plugin_python.js
+```
+The output is in `examples/parser_plugin_python/dist/` directory.
+- **Dynamic Mode**: Upload `dist/parser_plugin_python.js` and `dist/parser.py` via the Admin UI.
+- **Best for**: Rapid prototyping, teams familiar with Python, easy customization
+- **Note**: Pyodide runtime (~10MB) is loaded from CDN on first use
+
+Choose the approach that best fits your team's expertise and requirements.
 
 ## Project Structure
 
@@ -108,7 +129,9 @@ register_manager/
 │   ├── backend/             # Hono API Server
 │   ├── frontend/            # React Application
 │   └── shared/              # Shared Types & Schemas
-├── register_excel_parser/   # Rust Project (WASM Plugin)
+├── examples/
+│   ├── parser_plugin_rust/  # Example: Rust-based WASM Parser Plugin
+│   └── parser_plugin_python/ # Example: Python-based WASM Parser Plugin
 └── package.json
 ```
 

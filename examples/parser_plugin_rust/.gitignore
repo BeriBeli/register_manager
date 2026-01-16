@@ -1,0 +1,4 @@
+# Rust specific (local to this plugin)
+/target
+**/*.rs.bk
+Cargo.lock

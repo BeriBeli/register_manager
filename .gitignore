@@ -43,10 +43,26 @@ coverage/
 tmp/
 temp/
 
-# Rust / WASM
+# Rust / WASM Plugin
 target/
 pkg/
 **/*.wasm
+
+# Python / Pyodide Plugin
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+.uv/
+uv.lock
+*.egg-info/
+.ruff_cache/
+.mypy_cache/
 
 # Generated WASM bindings in frontend (if treated as artifacts)
 packages/frontend/src/utils/wasm_parser.js

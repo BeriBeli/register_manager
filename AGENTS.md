@@ -4,7 +4,7 @@
 - `packages/frontend/`: React + Vite UI (pages in `src/pages`, reusable UI in `src/components`).
 - `packages/backend/`: Hono API server, DB access in `src/db`, routes in `src/routes`, export generators in `src/services/generator`.
 - `packages/shared/`: Shared TypeScript types/schemas consumed by frontend/backend.
-- `register_excel_parser/`: Rust/WASM plugin for Excel import (build output in `pkg/`).
+- `examples/parser_plugin_rust/`: Example Rust/WASM plugin for Excel import (build output in `pkg/`).
 - `docs/`: Project documentation and supporting assets.
 
 ## Build, Test, and Development Commands

@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "register_excel_parser/**"
+      - "examples/parser_plugin_rust/**"
       - ".github/workflows/ci-plugin.yml"
   pull_request:
     branches: [main]
     paths:
-      - "register_excel_parser/**"
+      - "examples/parser_plugin_rust/**"
       - ".github/workflows/ci-plugin.yml"
 
 jobs:
@@ -29,16 +29,16 @@ jobs:
 
       - name: Test
         run: cargo test
-        working-directory: register_excel_parser
+        working-directory: examples/parser_plugin_rust
 
       - name: Install wasm-bindgen-cli
         run: cargo install wasm-bindgen-cli --locked
 
       - name: Build wasm32-unknown-unknown
         run: cargo build --release --target wasm32-unknown-unknown
-        working-directory: register_excel_parser
+        working-directory: examples/parser_plugin_rust
 
       - name: Generate web bindings (pkg/)
-        run: wasm-bindgen --target web --out-dir pkg --out-name register_excel_parser --typescript target/wasm32-unknown-unknown/release/register_excel_parser.wasm
-        working-directory: register_excel_parser
+        run: wasm-bindgen --target web --out-dir pkg --out-name parser_plugin_rust --typescript target/wasm32-unknown-unknown/release/parser_plugin_rust.wasm
+        working-directory: examples/parser_plugin_rust
 

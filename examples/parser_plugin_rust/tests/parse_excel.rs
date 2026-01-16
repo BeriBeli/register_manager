@@ -2,7 +2,7 @@ use register_excel_parser::parse_excel_to_import_data;
 
 #[test]
 fn parses_example_workbook_to_import_data() {
-    let data = include_bytes!("../../examples/example.xlsx");
+    let data = include_bytes!("../../example.xlsx");
     let import_data = parse_excel_to_import_data(data).expect("parse should succeed");
 
     assert!(!import_data.project.name.trim().is_empty());

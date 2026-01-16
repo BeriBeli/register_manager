@@ -11,11 +11,11 @@
 - 📊 **实时可视化** - 动态位域图渲染和内存映射层次结构展示。
 - 🗂️ **项目管理** - 支持多项目管理及版本控制。
 - 🔒 **安全认证** - 基于 Email/Password 的安全登录 (集成 Better Auth)。
-- ⚙️ **插件系统** - 支持 WASM 插件扩展架构，可自定义导入/导出逻辑。
+- ⚙️ **插件系统** - 基于 WASM 的可扩展插件架构,支持**针对不同公司或项目的寄存器格式进行客制化**。
 - ⚡ **动态加载** - 支持热加载插件（WASM + JS），无需重新编译应用。
 
 ### 数据处理 ✅
-- 📥 **Excel 导入** - **由 Rust & Polars 驱动**，提供高性能的 Excel 解析能力（支持 irgen 格式）。
+- 📥 **Excel 导入** - 通过 WASM 插件客制化（如 Rust 解析器示例），以处理您组织特定的各种 Excel 格式。
 - 📤 **多格式导出**
   - IP-XACT XML (IEEE 1685-2022)
   - C 语言头文件 (支持宏定义及大小端控制)
@@ -35,7 +35,7 @@
 ![Visual Editor](docs/images/vistual_editor.png)
 
 ### 强大的插件系统
-通过 WASM 插件扩展功能（如 Excel 解析器）。
+通过 WASM 插件客制化导入/导出逻辑，以支持您特定的寄存器格式。
 ![Plugin System](docs/images/plugin_system.png)
 
 ### 可靠的导入系统
@@ -92,13 +92,34 @@ bun run dev
 
 ### 插件开发
 
-构建 Excel 解析器插件 (Rust/WASM)：
+插件系统允许您**客制化导入/导出逻辑**以适配不同的寄存器格式。由于每个公司或项目可能有独特的 Excel/数据格式，WASM 插件提供了一种灵活的方式来使工具适应您的特定需求。
+
+我们提供两个示例实现以满足不同需求：
+
+#### 示例 1：基于 Rust 的解析器（高性能）
 ```bash
 # 构建 WASM 并生成 JS 胶水代码
 bun run plugin:build
 ```
-输出文件位于 `pkg/` 目录。
-- **动态模式**: 通过管理后台上传 `pkg/register_excel_parser_bg.wasm` (二进制) 和 `pkg/register_excel_parser.js` (JS 胶水代码)，即可立即启用插件。
+输出文件位于 `examples/parser_plugin_rust/pkg/` 目录。
+- **动态模式**: 通过管理后台上传 `pkg/parser_plugin_rust_bg.wasm` (二进制) 和 `pkg/parser_plugin_rust.js` (JS 胶水代码)，即可立即启用插件。
+- **适用于**: 生产环境、性能关键应用、小包体积 (~200KB)
+
+#### 示例 2：基于 Python 的解析器（易于客制化）
+```bash
+# 设置和部署
+cd examples/parser_plugin_python
+uv sync
+mkdir -p dist
+cp src/parser_plugin_python/parser.py dist/
+cp wrapper.js dist/parser_plugin_python.js
+```
+输出文件位于 `examples/parser_plugin_python/dist/` 目录。
+- **动态模式**: 通过管理后台上传 `dist/parser_plugin_python.js` 和 `dist/parser.py`。
+- **适用于**: 快速原型开发、熟悉 Python 的团队、易于客制化
+- **注意**: Pyodide 运行时 (~10MB) 会在首次使用时从 CDN 加载
+
+根据您团队的专业知识和需求选择最合适的方法。
 
 ## 项目结构
 
@@ -108,7 +129,9 @@ register_manager/
 ├── backend/             # Hono API 服务器
 ├── frontend/            # React 应用程序
 └── shared/              # 共享类型定义 & Schema
-├── register_excel_parser/   # Rust 项目 (WASM 插件)
+├── examples/
+│   ├── parser_plugin_rust/  # 示例：基于 Rust 的 WASM 解析器插件
+│   └── parser_plugin_python/ # 示例：基于 Python 的 WASM 解析器插件
 └── package.json
 ```
 

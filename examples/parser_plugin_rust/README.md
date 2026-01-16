@@ -1,4 +1,4 @@
-# Register Excel Parser (WASM Plugin)
+# Parser Plugin (Rust/WASM)
 
 This is a Rust-based WebAssembly plugin for the Register Manager, designed to parse Excel files into the IP-XACT compatible JSON format.
 
@@ -44,10 +44,10 @@ Run the following command to build the `.wasm` file:
 
 ```bash
 cargo build --release --target wasm32-unknown-unknown
-wasm-bindgen --target web --out-dir pkg --out-name register_excel_parser --typescript \
-  target/wasm32-unknown-unknown/release/register_excel_parser.wasm
+wasm-bindgen --target web --out-dir pkg --out-name parser_plugin_rust --typescript \
+  target/wasm32-unknown-unknown/release/parser_plugin_rust.wasm
 ```
 
-The output will be in `pkg/`. You can upload the `register_excel_parser_bg.wasm` file to the Register Manager.
+The output will be in `pkg/`. You can upload the `parser_plugin_rust_bg.wasm` and `parser_plugin_rust.js` files to the Register Manager.
 
 Note: You may need to rename the generated `.wasm` file to something more descriptive if desired.
