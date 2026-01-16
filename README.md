@@ -109,15 +109,14 @@ The output is in `examples/parser_plugin_rust/pkg/` directory.
 ```bash
 # Setup and deploy
 cd examples/parser_plugin_python
-uv sync
-mkdir -p dist
-cp src/parser_plugin_python/parser.py dist/
-cp wrapper.js dist/parser_plugin_python.js
+# Build artifacts
+uv run python build.py
 ```
 The output is in `examples/parser_plugin_python/dist/` directory.
-- **Dynamic Mode**: Upload `dist/parser_plugin_python.js` and `dist/parser.py` via the Admin UI.
-- **Best for**: Rapid prototyping, teams familiar with Python, easy customization
-- **Note**: Pyodide runtime (~10MB) is loaded from CDN on first use
+- **Dynamic Mode**: Upload all files from `dist/` via the Admin UI.
+  - Entry point: `parser_plugin_python.js`
+  - Includes: `pyodide.asm.wasm`, `parser.py`, etc.
+- **Best for**: Rapid prototyping, strictly offline usage (self-contained)
 
 Choose the approach that best fits your team's expertise and requirements.
 

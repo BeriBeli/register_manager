@@ -24,7 +24,7 @@ async function initPyodide() {
   });
 
   // Install required packages
-  await pyodide.loadPackage(['openpyxl']);
+  await pyodide.loadPackage(['openpyxl', 'pandas']);
 
   // Load the parser module (from the same directory as this file)
   const parserCode = await fetch(new URL('./parser.py', import.meta.url)).then(r => r.text());

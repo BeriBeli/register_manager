@@ -67,34 +67,31 @@ uv run mypy src/
 
 ## Build & Deploy
 
-This is a **pure Python plugin** - no compilation needed! Just copy the files:
+This project includes a build script to download the Pyodide runtime and package the plugin.
 
 ```bash
-# Create dist directory
-mkdir -p dist
-
-# Copy the Python parser
-cp src/parser_plugin_python/parser.py dist/
-
-# Copy the JavaScript wrapper
-cp wrapper.js dist/parser_plugin_python.js
+# Run the build script
+uv run python build.py
 ```
 
-That's it! No build tools, no compilation, just copy the source files.
+This will create a `dist/` directory containing:
+- `parser_plugin_python.js` - The main entry point
+- `pyodide.asm.wasm` - The WebAssembly runtime
+- `pyodide.mjs` - Pyodide loader
+- `parser.py` - The Python parser code
+- `pyodide-lock.json` - Package lock file
 
 ## Deployment
 
-Upload these files to the Register Manager admin interface:
-- `dist/parser_plugin_python.js` - JavaScript entry point
-- `dist/parser.py` - Python parser module
+Upload all files from the `dist/` directory to the Register Manager admin interface. The main entry point is `parser_plugin_python.js`.
 
-**Note**: The Pyodide runtime (~10MB) is loaded from CDN on first use and cached by the browser.
+
 
 ## How It Works
 
 1. **Browser loads** `parser_plugin_python.js`
-2. **JavaScript wrapper** loads Pyodide runtime from CDN (first time only)
-3. **Pyodide installs** required packages (`openpyxl`)
+2. **JavaScript wrapper** loads Pyodide runtime and WASM from local files
+3. **Pyodide installs** required packages (`openpyxl`, `pandas`)
 4. **Python code** (`parser.py`) is loaded into Pyodide
 5. **Excel parsing** happens in the browser using Python!
 
@@ -154,7 +151,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for dependency managemen
 | Performance | Good | Excellent |
 | Bundle Size | ~10MB (runtime) | ~200KB |
 | Customization | Very Easy | Moderate |
-| Build Process | Copy files | Compile to WASM |
+| Build Process | `python build.py` (downloads runtime) | `wasm-pack build` |
 | Ecosystem | Rich (openpyxl, pandas) | Growing |
 | Learning Curve | Low | Moderate-High |
 | Best For | Custom formats, rapid iteration | Production, performance-critical |
@@ -162,10 +159,10 @@ This project uses [uv](https://github.com/astral-sh/uv) for dependency managemen
 ## FAQ
 
 **Q: Do I need to compile anything?**  
-A: No! This is pure Python code. Just copy the files.
+A: You don't need to compile Python code, but you do need to run `python build.py` to download the WebAssembly runtime and configure the package.
 
 **Q: Why is the bundle so large?**  
-A: The Pyodide runtime includes a full Python interpreter. But it's loaded from CDN and cached, so users only download it once.
+A: The bundle includes the Pyodide runtime (Python interpreter in WebAssembly). By bundling it locally, you ensure the plugin is self-contained and doesn't rely on external CDNs.
 
 **Q: Can I use other Python libraries?**  
 A: Yes! Pyodide supports many popular packages. Just add them to the wrapper.js `loadPackage()` call.

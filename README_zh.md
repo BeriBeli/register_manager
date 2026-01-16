@@ -109,15 +109,14 @@ bun run plugin:build
 ```bash
 # 设置和部署
 cd examples/parser_plugin_python
-uv sync
-mkdir -p dist
-cp src/parser_plugin_python/parser.py dist/
-cp wrapper.js dist/parser_plugin_python.js
+# 构建产物
+uv run python build.py
 ```
 输出文件位于 `examples/parser_plugin_python/dist/` 目录。
-- **动态模式**: 通过管理后台上传 `dist/parser_plugin_python.js` 和 `dist/parser.py`。
-- **适用于**: 快速原型开发、熟悉 Python 的团队、易于客制化
-- **注意**: Pyodide 运行时 (~10MB) 会在首次使用时从 CDN 加载
+- **动态模式**: 通过管理后台上传 `dist/` 目录下的所有文件。
+  - 入口文件: `parser_plugin_python.js`
+  - 包含文件: `pyodide.asm.wasm`, `parser.py` 等。
+- **适用于**: 快速原型开发、严格离线使用（自包含）
 
 根据您团队的专业知识和需求选择最合适的方法。
 

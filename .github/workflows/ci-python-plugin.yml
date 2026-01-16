@@ -1,0 +1,52 @@
+name: CI (Python Plugin)
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "examples/parser_plugin_python/**"
+            - ".github/workflows/ci-python-plugin.yml"
+    pull_request:
+        branches: [main]
+        paths:
+            - "examples/parser_plugin_python/**"
+            - ".github/workflows/ci-python-plugin.yml"
+
+jobs:
+    test-and-build:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v5
+              with:
+                  enable-cache: true
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version-file: "examples/parser_plugin_python/pyproject.toml"
+
+            - name: Install dependencies
+              run: uv sync --all-extras --dev
+              working-directory: examples/parser_plugin_python
+
+            - name: Run Tests
+              # Run test as module to check parser logic correctness
+              run: uv run python -m tests.test_parser
+              working-directory: examples/parser_plugin_python
+
+            - name: Build WASM Artifacts
+              # Run the build script to download Pyodide and bundle
+              run: uv run python build.py
+              working-directory: examples/parser_plugin_python
+
+            - name: Verify Artifacts
+              run: |
+                  ls -l dist/
+                  test -f dist/parser_plugin_python.js
+                  test -f dist/parser.py
+                  test -f dist/pyodide.asm.wasm
+              working-directory: examples/parser_plugin_python
