@@ -281,6 +281,17 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 max-h-[65vh]">
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg animate-pulse">
+              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-red-400">Error</p>
+                <p className="text-sm text-red-300">{error}</p>
+              </div>
+            </div>
+          )}
+
           {/* Step 1: Upload */}
           {step === "upload" && (
             <div className="space-y-6">
@@ -376,17 +387,6 @@ export function ImportFromExcelDialog({ onClose }: ImportFromExcelDialogProps) {
           {/* Step 2: Preview */}
           {step === "preview" && importData && (
             <div className="space-y-6 pb-20"> {/* pb-20 for data list */}
-
-              {/* Error - Moved to top for visibility */}
-              {error && (
-                <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg animate-pulse">
-                  <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-bold text-red-400">Import Failed</p>
-                    <p className="text-sm text-red-300">{error}</p>
-                  </div>
-                </div>
-              )}
 
               {/* Stats */}
               <div className="grid grid-cols-4 gap-3">

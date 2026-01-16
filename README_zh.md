@@ -94,9 +94,9 @@ bun run dev
 
 插件系统允许您**客制化导入/导出逻辑**以适配不同的寄存器格式。由于每个公司或项目可能有独特的 Excel/数据格式，WASM 插件提供了一种灵活的方式来使工具适应您的特定需求。
 
-我们提供两个示例实现以满足不同需求：
+我们提供一些示例实现以满足不同需求：
 
-#### 示例 1：基于 Rust 的解析器（高性能）
+#### 示例 1：基于 Rust 的解析器
 ```bash
 # 构建 WASM 并生成 JS 胶水代码
 bun run plugin:build
@@ -104,21 +104,6 @@ bun run plugin:build
 输出文件位于 `examples/parser_plugin_rust/pkg/` 目录。
 - **动态模式**: 通过管理后台上传 `pkg/parser_plugin_rust_bg.wasm` (二进制) 和 `pkg/parser_plugin_rust.js` (JS 胶水代码)，即可立即启用插件。
 - **适用于**: 生产环境、性能关键应用、小包体积 (~200KB)
-
-#### 示例 2：基于 Python 的解析器（易于客制化）
-```bash
-# 设置和部署
-cd examples/parser_plugin_python
-# 构建产物
-uv run python build.py
-```
-输出文件位于 `examples/parser_plugin_python/dist/` 目录。
-- **动态模式**: 通过管理后台上传 `dist/` 目录下的所有文件。
-  - 入口文件: `parser_plugin_python.js`
-  - 包含文件: `pyodide.asm.wasm`, `parser.py` 等。
-- **适用于**: 快速原型开发、严格离线使用（自包含）
-
-根据您团队的专业知识和需求选择最合适的方法。
 
 ## 项目结构
 
@@ -129,8 +114,7 @@ register_manager/
 ├── frontend/            # React 应用程序
 └── shared/              # 共享类型定义 & Schema
 ├── examples/
-│   ├── parser_plugin_rust/  # 示例：基于 Rust 的 WASM 解析器插件
-│   └── parser_plugin_python/ # 示例：基于 Python 的 WASM 解析器插件
+│   └── parser_plugin_rust/  # 示例：基于 Rust 的 WASM 解析器插件
 └── package.json
 ```
 

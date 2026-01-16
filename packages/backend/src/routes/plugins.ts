@@ -90,7 +90,6 @@ pluginRoutes.post("/", async (c) => {
       }
 
       // Find WASM (for metadata/registry)
-      // For Python plugins, this will be pyodide.asm.wasm
       // For Rust plugins, this will be *_bg.wasm
       const wasmEntry = entries.find(e => e.entryName.endsWith(".wasm"));
       if (!wasmEntry) {

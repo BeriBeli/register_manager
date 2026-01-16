@@ -94,9 +94,9 @@ bun run dev
 
 The plugin system allows you to **customize import/export logic** for different register formats. Since every company or project may have unique Excel/data formats, WASM plugins provide a flexible way to adapt the tool to your specific needs.
 
-We provide two example implementations to suit different needs:
+We provide some example implementations to suit different needs:
 
-#### Example 1: Rust-based Parser (High Performance)
+#### Example 1: Rust-based Parser
 ```bash
 # Build WASM and generate JS glue code
 bun run plugin:build
@@ -104,21 +104,6 @@ bun run plugin:build
 The output is in `examples/parser_plugin_rust/pkg/` directory.
 - **Dynamic Mode**: Upload `pkg/parser_plugin_rust_bg.wasm` (Binary) and `pkg/parser_plugin_rust.js` (JS Glue) via the Admin UI to enable the plugin instantly.
 - **Best for**: Production use, performance-critical applications, small bundle size (~200KB)
-
-#### Example 2: Python-based Parser (Easy Customization)
-```bash
-# Setup and deploy
-cd examples/parser_plugin_python
-# Build artifacts
-uv run python build.py
-```
-The output is in `examples/parser_plugin_python/dist/` directory.
-- **Dynamic Mode**: Upload all files from `dist/` via the Admin UI.
-  - Entry point: `parser_plugin_python.js`
-  - Includes: `pyodide.asm.wasm`, `parser.py`, etc.
-- **Best for**: Rapid prototyping, strictly offline usage (self-contained)
-
-Choose the approach that best fits your team's expertise and requirements.
 
 ## Project Structure
 
@@ -129,8 +114,7 @@ register_manager/
 │   ├── frontend/            # React Application
 │   └── shared/              # Shared Types & Schemas
 ├── examples/
-│   ├── parser_plugin_rust/  # Example: Rust-based WASM Parser Plugin
-│   └── parser_plugin_python/ # Example: Python-based WASM Parser Plugin
+│   └── parser_plugin_rust/  # Example: Rust-based WASM Parser Plugin
 └── package.json
 ```
 
